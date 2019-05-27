@@ -1,4 +1,4 @@
-# datalog-parser <a href="https://clojars.org/io.lambdaforge/datalog-parser"> <img src="https://img.shields.io/clojars/v/io.lambdaforge/datalog-parser.svg" /></a> 
+# datalog-parser <a href="https://clojars.org/io.lambdaforge/datalog-parser"> <img src="https://img.shields.io/clojars/v/io.lambdaforge/datalog-parsersvg" /></a> 
 
 Datahike's form parser.
 
@@ -6,21 +6,21 @@ Datahike's form parser.
 Add `[io.lambdaforge/datalog-parser "0.0.1"]` to your `project.clj`. Start a repl and run:
 
 ```Clojure
-(require '[datalog-parser :as dp])
+(require '[datalog-parser.core :as dp])
 
 (def query '[:find ?x :in $ ?y :where [?x :z ?y]])
 
 (dp/parse-query query)
 
 ;;=>
-;;#datalog-parser.Query{:qfind #datalog-parser.FindRel{:elements [#datalog-parser.Variable{:symbol ?x}]},
+;;#datalog-parser.coreQuery{:qfind #datalog-parser.FindRel{:elements [#datalog-parser.Variable{:symbol ?x}]},
 ;;                       :qwith nil,
-;;                       :qin [#datalog-parser.BindScalar{:variable #datalog-parser.SrcVar{:symbol $}}
-;;                             #datalog-parser.BindScalar{:variable #datalog-parser.Variable{:symbol ?y}}],
-;;                       :qwhere [#datalog-parser.Pattern{:source #datalog-parser.DefaultSrc{},
-;;                                                         :pattern [#datalog-parser.Variable{:symbol ?x}
-;;                                                                   #datalog-parser.Constant{:value :z}
-;;                                                                   #datalog-parser.Variable{:symbol ?y}]}]}
+;;                       :qin [#datalog-parser.coreBindScalar{:variable #datalog-parser.SrcVar{:symbol $}}
+;;                             #datalog-parser.coreBindScalar{:variable #datalog-parser.Variable{:symbol ?y}}],
+;;                       :qwhere [#datalog-parser.corePattern{:source #datalog-parser.DefaultSrc{},
+;;                                                         :pattern [#datalog-parser.coreVariable{:symbol ?x}
+;;                                                                   #datalog-parser.coreConstant{:value :z}
+;;                                                                   #datalog-parser.coreVariable{:symbol ?y}]}]}
 ```
 
 For more examples look at the [tests](https://github.com/lambdaforge/datalog-parser/blob/master/test/datalog-parser_test.cljc).
