@@ -1,14 +1,9 @@
 (ns ^:no-doc datalog-parser.core
   (:require [clojure.set :as set]
-            [me.tonsky.persistent-sorted-set.arrays :as arrays])
+            [me.tonsky.persistent-sorted-set.arrays :as arrays]
+            [datalog-parser.utils #?(:cljs :refer-macros :clj :refer) [raise]])
   (:refer-clojure :exclude [distinct? seqable?])
   #?(:cljs (:require-macros [datalog-parser.core :refer [deftrecord]])))
-
-#?(:clj
-   (defmacro raise [& fragments]
-     (let [msgs (butlast fragments)
-           data (last fragments)]
-       `(throw (ex-info (str ~@(map (fn [m#] (if (string? m#) m# (list 'pr-str m#))) msgs)) ~data)))))
 
 (defn #?@(:clj  [^Boolean seqable?]
           :cljs [^boolean seqable?])
