@@ -1,9 +1,9 @@
-(ns ^:no-doc datalog-parser.core
+(ns ^:no-doc datalog.parser
   (:require [clojure.set :as set]
             [me.tonsky.persistent-sorted-set.arrays :as arrays]
-            [datalog-parser.utils #?(:cljs :refer-macros :clj :refer) [raise]])
+            [datalog.parser.utils #?(:cljs :refer-macros :clj :refer) [raise]])
   (:refer-clojure :exclude [distinct? seqable?])
-  #?(:cljs (:require-macros [datalog-parser.core :refer [deftrecord]])))
+  #?(:cljs (:require-macros [datalog.parser :refer [deftrecord]])))
 
 (defn #?@(:clj  [^Boolean seqable?]
           :cljs [^boolean seqable?])
@@ -27,7 +27,7 @@
 
 #?(:clj
    (defmacro deftrecord
-     "Augment all datalog-parser/ records with default implementation of ITraversable"
+     "Augment all datalog.parser/ records with default implementation of ITraversable"
      [tagname fields & rest]
      (let [f    (gensym "f")
            pred (gensym "pred")
@@ -35,16 +35,16 @@
        `(defrecord ~tagname ~fields
           ITraversable
           (~'-postwalk [this# ~f]
-            (let [new# (new ~tagname ~@(map #(list 'datalog-parser.core/postwalk % f) fields))]
+            (let [new# (new ~tagname ~@(map #(list 'datalog.parser/postwalk % f) fields))]
               (if-let [meta# (meta this#)]
                 (with-meta new# meta#)
                 new#)))
           (~'-collect [_# ~pred ~acc]
             ;; [x y z] -> (collect pred z (collect pred y (collect pred x acc)))
-            ~(reduce #(list 'datalog-parser.core/collect pred %2 %1) acc fields))
+            ~(reduce #(list 'datalog.parser/collect pred %2 %1) acc fields))
           (~'-collect-vars [_# ~acc]
             ;; [x y z] -> (collect-vars-acc (collect-vars-acc (collect-vars-acc acc x) y) z)
-            ~(reduce #(list 'datalog-parser.core/collect-vars-acc %1 %2) acc fields))
+            ~(reduce #(list 'datalog.parser/collect-vars-acc %1 %2) acc fields))
           ~@rest))))
 
 (defn of-size? [form size]

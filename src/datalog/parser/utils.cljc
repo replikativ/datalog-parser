@@ -1,4 +1,4 @@
-(ns ^:no-doc datalog-parser.utils)
+(ns ^:no-doc datalog.parser.utils)
 
 #?(:clj
    (defmacro raise [& fragments]

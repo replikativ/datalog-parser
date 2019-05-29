@@ -1,7 +1,7 @@
-(ns datalog-parser.core-test
+(ns datalog.parser-test
   (:require #?(:cljs [cljs.test    :as t :refer-macros [is are deftest testing]]
                :clj  [clojure.test :as t :refer        [is are deftest testing]])
-            [datalog-parser.core :as dp])
+            [datalog.parser :as dp])
   (:import [clojure.lang ExceptionInfo]))
 
 ;; utils
