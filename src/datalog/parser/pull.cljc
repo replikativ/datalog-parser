@@ -1,5 +1,5 @@
 (ns datalog.parser.pull
-  (:require [datalog.parser.utils :as dpu #?(:cljs :refer-macros :clj :refer) [raise]]))
+  (:require [datalog.parser.impl.util :as dpu #?(:cljs :refer-macros :clj :refer) [raise]]))
 
 (defrecord PullSpec [wildcard? attrs])
 

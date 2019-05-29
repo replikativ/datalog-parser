@@ -1,7 +1,7 @@
 (ns ^:no-doc datalog.parser
   (:require [clojure.set :as set]
             [me.tonsky.persistent-sorted-set.arrays :as arrays]
-            [datalog.parser.utils #?(:cljs :refer-macros :clj :refer) [raise]])
+            [datalog.parser.impl.util #?(:cljs :refer-macros :clj :refer) [raise]])
   (:refer-clojure :exclude [distinct? seqable?])
   #?(:cljs (:require-macros [datalog.parser :refer [deftrecord]])))
 
