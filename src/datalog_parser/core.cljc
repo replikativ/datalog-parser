@@ -102,7 +102,6 @@
 (deftrecord Constant    [value])
 (deftrecord PlainSymbol [symbol])
 
-
 (defn parse-placeholder [form]
   (when (= '_ form)
     (Placeholder.)))
@@ -137,15 +136,12 @@
   (when (parse-plain-symbol form)
     (Variable. form)))
 
-
-
 ;; fn-arg = (variable | constant | src-var)
 
 (defn parse-fn-arg [form]
   (or (parse-variable form)
       (parse-constant form)
       (parse-src-var form)))
-
 
 ;; rule-vars = [ variable+ | ([ variable+ ] variable*) ]
 
@@ -176,7 +172,6 @@
 
 (defn rule-vars-arity [rule-vars]
   [(count (:required rule-vars)) (count (:free rule-vars))])
-
 
 ;; binding        = (bind-scalar | bind-tuple | bind-coll | bind-rel)
 ;; bind-scalar    = variable
@@ -231,7 +226,6 @@
       (raise "Cannot parse binding, expected (bind-scalar | bind-tuple | bind-coll | bind-rel)"
              {:error :parser/binding, :form form})))
 
-
 ;; find-spec        = ':find' (find-rel | find-coll | find-tuple | find-scalar)
 ;; find-rel         = find-elem+
 ;; find-coll        = [ find-elem '...' ]
@@ -280,7 +274,6 @@
 
 (defn pull? [element]
   (instance? Pull element))
-
 
 (defn parse-aggregate [form]
   (when (and (sequential? form)
@@ -368,7 +361,6 @@
       (raise "Cannot parse :find, expected: (find-rel | find-coll | find-tuple | find-scalar)"
              {:error :parser/find, :fragment form})))
 
-
 ;; with = [ variable+ ]
 
 (defn parse-with [form]
@@ -376,7 +368,6 @@
     (parse-seq parse-variable form)
     (raise "Cannot parse :with clause, expected [ variable+ ]"
            {:error :parser/with, :form form})))
-
 
 ;; in = [ (src-var | rules-var | plain-symbol | binding)+ ]
 
@@ -392,7 +383,6 @@
     (parse-seq parse-in-binding form)
     (raise "Cannot parse :in clause, expected (src-var | % | plain-symbol | bind-scalar | bind-tuple | bind-coll | bind-rel)"
            {:error :parser/in, :form form})))
-
 
 ;; clause          = (data-pattern | pred-expr | fn-expr | rule-expr | not-clause | not-join-clause | or-clause | or-join-clause)
 ;; data-pattern    = [ src-var? (variable | constant | '_')+ ]
@@ -414,7 +404,6 @@
 (deftrecord Not       [source vars clauses])
 (deftrecord Or        [source rule-vars clauses])
 (deftrecord And       [clauses])
-
 
 (defn parse-pattern-el [form]
   (or (parse-placeholder form)
@@ -575,7 +564,6 @@
             (raise "Cannot parse 'or-join' clause, expected [ src-var? 'or-join' [variable+] clause+ ]"
                    {:error :parser/where, :form form})))))))
 
-
 #_(defn reorder-nots [parent-vars clauses]
     (loop [acc     []
            clauses clauses
@@ -603,7 +591,6 @@
                                :form  (source not)
                                :vars  missing}))))))))
 
-
 (defn parse-clause [form]
   (or
     (parse-not       form)
@@ -624,7 +611,6 @@
   (or (parse-clauses form)
       (raise "Cannot parse :where clause, expected [clause+]"
              {:error :parser/where, :form form})))
-
 
 ;; rule-branch = [rule-head clause+]
 ;; rule-head   = [rule-name rule-vars]
@@ -680,7 +666,6 @@
       (do
         (validate-arity name branches)
         (Rule. name branches)))))
-
 
 ;; query
 

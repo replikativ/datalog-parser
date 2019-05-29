@@ -17,7 +17,6 @@
                 (t/do-report {:type :fail, :message ~msg, :expected '~form, :actual e#})))
             e#)))))
 
-
 (deftest bindings
   (are [form res] (= (dp/parse-binding form) res)
     '?x
@@ -120,8 +119,6 @@
                                           [(dp/->Variable '?b)
                                            (dp/->Constant 1)
                                            (dp/->SrcVar '$x)])))))
-
-
 
 (deftest validation
   (are [q msg] (thrown-msg? msg (dp/parse-query q))
