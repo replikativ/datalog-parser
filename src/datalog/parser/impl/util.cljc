@@ -1,37 +1,40 @@
-(ns ^:no-doc datalog.parser.impl.util)
+(ns ^:no-doc datalog.parser.impl.util
+  (:require [clojure.string :as str]))
 
 #?(:clj
    (defmacro raise [& fragments]
-     (let [msgs (butlast fragments)
-           data (last fragments)]
-       `(throw (ex-info (str ~@(map (fn [m#] (if (string? m#) m# (list 'pr-str m#))) msgs)) ~data)))))
+     (let [msgs (for [m (butlast fragments)]
+                  (cond->> m (not (string? m)) (list 'pr-str)))]
+       `(throw (ex-info (str ~@msgs) ~(last fragments))))))
+
+#?(:clj
+   (defmacro forv [& for-args]
+     `(into [] (for ~@for-args))))
+
+(defn- decompose-ref [v]
+  (cond
+    (keyword? v) [(namespace v) (name v)]
+    (string?  v) (recur (keyword v))
+    :else        (raise "Bad attribute type: " v ", expected keyword or string"
+                        {:error     :transact/syntax
+                         :attribute v})))
+
+(defn- reverse-attr? [v]
+  (str/starts-with? v "_"))
 
 (defn #?@(:clj  [^Boolean reverse-ref?]
           :cljs [^boolean reverse-ref?]) [attr]
-  (cond
-    (keyword? attr)
-    (= \_ (nth (name attr) 0))
+  (-> attr decompose-ref second reverse-attr?))
 
-    (string? attr)
-    (boolean (re-matches #"(?:([^/]+)/)?_([^/]+)" attr))
+(defn- invert-name [s]
+  (if (reverse-attr? s)
+    (subs s  1)
+    (str "_" s)))
 
-    :else
-    (raise "Bad attribute type: " attr ", expected keyword or string"
-           {:error :transact/syntax, :attribute attr})))
+(defn reverse-ref [v]
+  (-> (decompose-ref v)
+      (update 1 invert-name)
+      (cond->> (keyword? v) (apply keyword))))
 
-(defn reverse-ref [attr]
-  (cond
-    (keyword? attr)
-    (if (reverse-ref? attr)
-      (keyword (namespace attr) (subs (name attr) 1))
-      (keyword (namespace attr) (str "_" (name attr))))
-
-    (string? attr)
-    (let [[_ ns name] (re-matches #"(?:([^/]+)/)?([^/]+)" attr)]
-      (if (= \_ (nth name 0))
-        (if ns (str ns "/" (subs name 1)) (subs name 1))
-        (if ns (str ns "/_" name) (str "_" name))))
-
-    :else
-    (raise "Bad attribute type: " attr ", expected keyword or string"
-           {:error :transact/syntax, :attribute attr})))
+(defn prefixed-symbol? [sym prefix]
+  (and (symbol? sym) (= (first (name sym) prefix))))

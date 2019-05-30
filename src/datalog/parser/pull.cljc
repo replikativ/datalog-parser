@@ -1,56 +1,54 @@
 (ns datalog.parser.pull
-  (:require [datalog.parser.impl.util :as dpu #?(:cljs :refer-macros :clj :refer) [raise]]))
+  (:require [datalog.parser.impl.util :as util
+             #?(:cljs :refer-macros :clj :refer) [raise forv]])
+  (:refer-clojure :rename {pos? core-pos?}))
 
-(defrecord PullSpec [wildcard? attrs])
+(defn- pos? [n]
+  (and (number? n) (core-pos? n)))
+
+(defrecord PullSpec            [wildcard? attrs])
+(defrecord PullAttrName        [attr])
+(defrecord PullReverseAttrName [attr rattr])
+(defrecord PullLimitExpr       [attr limit])
+(defrecord PullDefaultExpr     [attr value])
+(defrecord PullWildcard        [])
+(defrecord PullRecursionLimit  [limit])
+(defrecord PullMapSpecEntry    [attr porrl])
+(defrecord PullAttrWithOpts    [attr opts])
 
 (defprotocol IPullSpecComponent
   (-as-spec [this]))
 
-(defrecord PullAttrName [attr]
-  IPullSpecComponent
+(extend-protocol IPullSpecComponent
+  PullAttrName
   (-as-spec [this]
-    [attr {:attr attr}]))
-
-(defrecord PullReverseAttrName [attr rattr]
-  IPullSpecComponent
+    [(:attr this) {:attr (:attr this)}])
+  PullReverseAttrName
   (-as-spec [this]
-    [rattr {:attr attr}]))
-
-(defrecord PullLimitExpr [attr limit]
-  IPullSpecComponent
+    [(:rattr this) {:attr (:attr this)}])
+  PullLimitExpr
   (-as-spec [this]
-    (-> (-as-spec attr)
-        (assoc-in [1 :limit] limit))))
-
-(defrecord PullDefaultExpr [attr value]
-  IPullSpecComponent
+    (-> (-as-spec (:attr this))
+        (assoc-in [1 :limit] (:limit this))))
+  PullDefaultExpr
   (-as-spec [this]
-    (-> (-as-spec attr)
-        (assoc-in [1 :default] value))))
-
-(defrecord PullWildcard [])
-
-(defrecord PullRecursionLimit [limit]
-  IPullSpecComponent
+    (-> (-as-spec (:attr this))
+        (assoc-in [1 :default] (:value this))))
+  PullRecursionLimit
   (-as-spec [this]
-    [:recursion limit]))
-
-(defrecord PullMapSpecEntry [attr porrl]
-  IPullSpecComponent
+    [:recursion (:limit this)])
+  PullMapSpecEntry
   (-as-spec [this]
-    (-> (-as-spec attr)
-        (update 1 conj (-as-spec porrl)))))
-
-(defrecord PullAttrWithOpts [attr opts]
-  IPullSpecComponent
+    (-> (-as-spec (:attr this))
+        (update 1 conj (-as-spec (:porrl this)))))
+  PullAttrWithOpts
   (-as-spec [this]
-    (-> (-as-spec attr)
-        (update 1 merge opts))))
+    (-> (-as-spec (:attr this))
+        (update 1 merge (:opts this)))))
 
-(defn- aggregate-specs
-  [res part]
+(defn- aggregate-specs [res part]
   (if (instance? PullWildcard part)
-    (assoc res :wildcard? true)
+    (assoc  res :wildcard? true)
     (update res :attrs conj! (-as-spec part))))
 
 (defrecord PullPattern [specs]
@@ -64,41 +62,32 @@
 
 (def ^:private wildcard? #{'* :* "*"})
 
-(defn- parse-wildcard
-  [spec]
+(defn- parse-wildcard [spec]
   (when (wildcard? spec)
     (PullWildcard.)))
 
-(defn- parse-attr-name
-  [spec]
+(defn- parse-attr-name [spec]
   (when (or (keyword? spec) (string? spec))
-    (if (dpu/reverse-ref? spec)
-      (PullReverseAttrName. (dpu/reverse-ref spec) spec)
+    (if (util/reverse-ref? spec)
+      (PullReverseAttrName. (util/reverse-ref spec) spec)
       (PullAttrName. spec))))
 
 (def ^:private unlimited-recursion? #{'... "..."})
 
-(defn- parse-recursion-limit
-  [spec]
+(defn- parse-recursion-limit [spec]
   (cond
-    (unlimited-recursion? spec)
-    (PullRecursionLimit. nil)
+    (unlimited-recursion? spec) (PullRecursionLimit. nil)
+    (pos? spec)                 (PullRecursionLimit. spec)))
 
-    (and (number? spec) (pos? spec))
-    (PullRecursionLimit. spec)))
-
-(defn- maybe-attr-expr?
-  [spec]
+(defn- maybe-attr-expr? [spec]
   (and (sequential? spec) (= 3 (count spec))))
 
 (def ^:private limit? #{'limit :limit "limit"})
 
-(defn- parse-limit-expr
-  [spec]
+(defn- parse-limit-expr [spec]
   (let [[limit-sym attr-name-spec pos-num] spec]
     (when (limit? limit-sym)
-      (if-let [attr-name (and (or (nil? pos-num)
-                                  (and (number? pos-num) (pos? pos-num)))
+      (if-let [attr-name (and (or (nil? pos-num) (pos? pos-num))
                               (parse-attr-name attr-name-spec))]
         (PullLimitExpr. attr-name pos-num)
         (raise "Expected [\"limit\" attr-name (positive-number | nil)]"
@@ -106,8 +95,7 @@
 
 (def ^:private default? #{'default :default "default"})
 
-(defn- parse-default-expr
-  [spec]
+(defn- parse-default-expr [spec]
   (let [[default-sym attr-name-spec default-val] spec]
     (when (default? default-sym)
       (if-let [attr-name (parse-attr-name attr-name-spec)]
@@ -115,8 +103,7 @@
         (raise "Expected [\"default\" attr-name any-value]"
                {:error :parser/pull, :fragment spec})))))
 
-(defn- parse-map-spec-entry
-  [[k v]]
+(defn- parse-map-spec-entry [[k v]]
   (if-let [attr-name (or (parse-attr-name k)
                          (when (maybe-attr-expr? k)
                            (parse-limit-expr k)))]
@@ -128,56 +115,52 @@
     (raise "Expected (attr-name | limit-expr)"
            {:error :parser/pull, :fragment [k v]})))
 
-(defn- parse-map-spec
-  [spec]
+(defn- parse-map-spec [spec]
   (when (map? spec)
     (assert (= 1 (count spec)) "Maps should contain exactly 1 entry")
     (parse-map-spec-entry (first spec))))
 
-(defn- parse-attr-with-opts
-  [spec]
-  (when (sequential? spec)
-    (let [[attr-name-spec & opts-spec] spec]
-      (when-some [attr-name (parse-attr-name attr-name-spec)]
-        (when (and (even? (count opts-spec))
-                   (every? #{:as :limit :default} (->> opts-spec (partition 2) (map first))))
-          (PullAttrWithOpts. attr-name (apply array-map opts-spec)))))))
+(let [opt? #{:as :limit :default}]
+  (defn- parse-attr-with-opts [spec]
+    (when (sequential? spec)
+      (let [[attr-name-spec & opts-spec] spec]
+        (when-some [attr-name (parse-attr-name attr-name-spec)]
+          (when (and (even?  (count opts-spec))
+                     (every? opt? (take-nth 2 opts-spec)))
+            (PullAttrWithOpts. attr-name (apply array-map opts-spec))))))))
 
-(defn- parse-attr-expr
-  [spec]
+(defn- parse-attr-expr [spec]
   (when (maybe-attr-expr? spec)
-    (or (parse-limit-expr spec)
+    (or (parse-limit-expr   spec)
         (parse-default-expr spec))))
 
-(defn- parse-attr-spec
-  [spec]
-  (or (parse-attr-name spec)
-      (parse-wildcard spec)
-      (parse-map-spec spec)
+(defn- parse-attr-spec [spec]
+  (or (parse-attr-name      spec)
+      (parse-wildcard       spec)
+      (parse-map-spec       spec)
       (parse-attr-with-opts spec)
-      (parse-attr-expr spec)
+      (parse-attr-expr      spec)
       (raise "Cannot parse attr-spec, expected: (attr-name | wildcard | map-spec | attr-expr)"
              {:error :parser/pull, :fragment spec})))
 
-(defn- pattern-clause-type
-  [clause]
+(defn- pattern-clause-type [clause]
   (cond
     (map? clause)      :map
     (wildcard? clause) :wildcard
     :else              :other))
 
-(defn- expand-map-clause
-  [clause]
-  (into [] (map #(conj {} %)) clause))
+(defn- expand-map-clause [clause]
+  (forv [[k v] clause]
+    {k v}))
 
-(defn- simplify-pattern-clauses
-  [pattern]
-  (let [groups (group-by pattern-clause-type pattern)
-        base   (if (not-empty (get groups :wildcard))
-                 ['*] [])]
-    (-> base
-        (into (get groups :other))
-        (into (mapcat expand-map-clause) (get groups :map)))))
+(let [wildcarded? (comp not-empty :wildcard)]
+  (defn- simplify-pattern-clauses [pattern]
+    (let [groups (group-by pattern-clause-type pattern)
+          base   (cond-> [] (wildcarded? groups) (conj '*))]
+      (into base
+        (concat
+         (:other groups)
+         (mapcat expand-map-clause (:map groups)))))))
 
 (defn parse-pattern
   "Parse an EDN pull pattern into a tree of records using the following
@@ -200,7 +183,7 @@ recursion-limit    = positive-number | '...'
   (when (sequential? pattern)
     (->> pattern
          simplify-pattern-clauses
-         (into [] (map parse-attr-spec))
+         (mapv parse-attr-spec)
          (PullPattern.))))
 
 (defn pattern->spec
