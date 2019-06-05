@@ -1,5 +1,5 @@
-(ns datalog-parser.pull-test
-  (:require [datalog-parser.pull :as dpp]
+(ns datalog.parser.pull-test
+  (:require [datalog.parser.pull :as dpp]
             #?(:cljs [cljs.test    :as t :refer-macros [is are deftest testing]]
                :clj  [clojure.test :as t :refer        [is are deftest testing]])))
 
@@ -10,7 +10,7 @@
   (are [pattern expected] (= expected (dpp/parse-pull pattern))
     '[:db/id :foo/bar]
     (dpp/->PullSpec false {:db/id   {:attr :db/id}
-                         :foo/bar {:attr :foo/bar}})
+                           :foo/bar {:attr :foo/bar}})
 
     '[(limit :foo 1)]
     (dpp/->PullSpec false {:foo {:attr :foo :limit 1}})

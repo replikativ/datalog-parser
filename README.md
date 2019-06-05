@@ -1,29 +1,27 @@
-# datalog-parser <a href="https://clojars.org/io.lambdaforge/datalog-parser"> <img src="https://img.shields.io/clojars/v/io.lambdaforge/datalog-parser.svg" /></a> 
+# datalog-parser <a href="https://clojars.org/io.lambdaforge/datalog-parser"> <img src="https://img.shields.io/clojars/v/io.lambdaforge/datalog-parser.svg" /></a>
 
-Datahike's form parser.
+A Datalog parser.
 
 ## Usage
 Add `[io.lambdaforge/datalog-parser "0.0.1"]` to your `project.clj`. Start a repl and run:
 
 ```Clojure
-(require '[datalog-parser.core :as dp])
+(require '[datalog.parser :as parser])
 
-(def query '[:find ?x :in $ ?y :where [?x :z ?y]])
+(parser/parse '[:find ?x :in $ ?y :where [?x :z ?y]])
 
-(dp/parse-query query)
-
-;;=>
-;;#datalog-parser.coreQuery{:qfind #datalog-parser.FindRel{:elements [#datalog-parser.Variable{:symbol ?x}]},
-;;                       :qwith nil,
-;;                       :qin [#datalog-parser.coreBindScalar{:variable #datalog-parser.SrcVar{:symbol $}}
-;;                             #datalog-parser.coreBindScalar{:variable #datalog-parser.Variable{:symbol ?y}}],
-;;                       :qwhere [#datalog-parser.corePattern{:source #datalog-parser.DefaultSrc{},
-;;                                                         :pattern [#datalog-parser.coreVariable{:symbol ?x}
-;;                                                                   #datalog-parser.coreConstant{:value :z}
-;;                                                                   #datalog-parser.coreVariable{:symbol ?y}]}]}
+;;=> (namespaces omitted for brevity)
+;; #Query{:qfind  #FindRel{:elements [#Variable{:symbol ?x}]}
+;;        :qwith  nil
+;;        :qin    [#BindScalar{:variable #SrcVar{:symbol $}}
+;;                 #BindScalar{:variable #Variable{:symbol ?y}}]
+;;        :qwhere [#Pattern{:source #DefaultSrc{}
+;;                          :pattern [#Variable{:symbol ?x}
+;;                                    #Constant{:value  :z}
+;;                                    #Variable{:symbol ?y}]}]}
 ```
 
-For more examples look at the [tests](https://github.com/lambdaforge/datalog-parser/blob/master/test/datalog-parser_test.cljc).
+For more examples look at the [tests](test/datalog/parser_test.cljc).
 
 
 ## License
