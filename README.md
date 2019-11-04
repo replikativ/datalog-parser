@@ -23,6 +23,22 @@ Add `[io.lambdaforge/datalog-parser "0.1.1"]` to your `project.clj`. Start a rep
 
 For more examples look at the [tests](test/datalog/parser_test.cljc).
 
+## TODO
+
+## 0.2.0
+
+Unparsing support, missing types:
+
+- PullSpec
+- PullAttrName
+- PullReverseAttrName
+- PullLimitExpr
+- PullDefaultExpr
+- PullWildcard
+- PullRecursionLimit
+- PullMapSpecEntry
+- PullAttrWithOpts
+
 
 ## License
 
