@@ -4,6 +4,8 @@
             [clojure.string            :as str])
   (:refer-clojure :exclude [seqable?]))
 
+#?(:clj (set! *warn-on-reflection* true))
+
 #?(:clj
    (defmacro raise [& fragments]
      (let [msgs (for [m (butlast fragments)]
@@ -40,7 +42,7 @@
       (cond->> (keyword? v) (apply keyword))))
 
 (defn prefixed-symbol? [sym prefix]
-  (and (symbol? sym) (= (first (name sym) prefix))))
+  (and (symbol? sym) (= (first (name sym)) prefix)))
 
 (defn- #?@(:clj  [^Boolean seqable?]
            :cljs [^boolean seqable?])
@@ -48,12 +50,16 @@
   (and (not (string? x))
        #?(:cljs (or (cljs.core/seqable? x)
                     (array? x))
-          :clj  (or (seq? x)
+          :clj  (clojure.core/seqable? x)
+          ;; was
+          #_(or (seq? x)
                     (instance? clojure.lang.Seqable x)
                     (nil? x)
                     (instance? Iterable x)
                     (-> x .getClass .isArray)
                     (instance? java.util.Map x)))))
+
+
 
 (defn collect
   ([pred form] (collect pred form []))

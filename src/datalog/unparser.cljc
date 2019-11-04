@@ -13,7 +13,7 @@
                Pattern Placeholder PlainSymbol Predicate Pull Query Rule
                RuleBranch RuleExpr RulesVar RuleVars SrcVar Variable])))
 
-
+#?(:clj (set! *warn-on-reflection* true))
 
 (defprotocol PUnparse
   (-unparse [this]))
@@ -100,7 +100,9 @@
   ;; TODO test, check not-join
   Not
   (-unparse [{:keys [source vars clauses]}]
-    (concat (list (-unparse source) 'not)
+    (concat (when-let [src (-unparse source)]
+              (list src 'not)
+              (list 'not))
             (map -unparse clauses)))
 
   ;; TODO test, check or-join

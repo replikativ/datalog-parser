@@ -5,6 +5,8 @@
              :refer [collect]])
   #?(:cljs (:require-macros [datalog.parser.type :refer [deftrecord]])))
 
+#?(:clj (set! *warn-on-reflection* true))
+
 (declare collect-vars)
 
 #?(:clj

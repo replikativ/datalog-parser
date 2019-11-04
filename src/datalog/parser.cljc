@@ -4,6 +4,8 @@
             [datalog.parser.impl.util
              #?(:cljs :refer-macros :clj :refer) [raise]]))
 
+#?(:clj (set! *warn-on-reflection* true))
+
 (defn parse [q]
   (let [qm  (cond
               (map?        q) q

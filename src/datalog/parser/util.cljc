@@ -1,6 +1,8 @@
 (ns datalog.parser.util
   (:require [datalog.parser.impl.proto :as proto :refer [traversable?]]))
 
+#?(:clj (set! *warn-on-reflection* true))
+
 (defn postwalk [form f]
   ;; additional handling for maps and records that keeps structure type
   (cond

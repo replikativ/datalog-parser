@@ -3,11 +3,17 @@
             [datalog.parser.type       :as t]
             [datalog.parser.util                :refer [postwalk]]
             [datalog.parser.impl.proto :as p    :refer [traversable?]]
-            [datalog.parser.impl.util  :as util
-             #?(:cljs :refer-macros :clj :refer) [raise forv]])
+            [datalog.parser.impl.util :as util
+            #?(:cljs :refer-macros :clj :refer) [raise forv]]
+            #?(:cljs [datalog.parser.type :refer
+                     [Not And Or Aggregate SrcVar RulesVar RuleExpr
+                      RuleVars Variable]]))
   (:refer-clojure :rename  {distinct? core-distinct?})
-  (:import [datalog.parser.type
-            Not And Or Aggregate SrcVar RulesVar RuleExpr RuleVars Variable]))
+  #?(:clj
+    (:import [datalog.parser.type
+              Not And Or Aggregate SrcVar RulesVar RuleExpr RuleVars Variable])))
+
+#?(:clj (set! *warn-on-reflection* true))
 
 (declare parse-clause parse-clauses parse-binding)
 

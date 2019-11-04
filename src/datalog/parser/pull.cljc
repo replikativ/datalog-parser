@@ -3,6 +3,8 @@
              #?(:cljs :refer-macros :clj :refer) [raise forv]])
   (:refer-clojure :rename {pos? core-pos?}))
 
+#?(:clj (set! *warn-on-reflection* true))
+
 (defn- pos? [n]
   (and (number? n) (core-pos? n)))
 

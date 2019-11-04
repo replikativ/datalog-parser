@@ -3,7 +3,7 @@
 A Datalog parser.
 
 ## Usage
-Add `[io.lambdaforge/datalog-parser "0.0.1"]` to your `project.clj`. Start a repl and run:
+Add `[io.lambdaforge/datalog-parser "0.1.1"]` to your `project.clj`. Start a repl and run:
 
 ```Clojure
 (require '[datalog.parser :as parser])
@@ -29,12 +29,4 @@ For more examples look at the [tests](test/datalog/parser_test.cljc).
 Copyright © 2019 lambdaforge UG (haftungsbeschränkt), Nikita Prokopov
 
 This program and the accompanying materials are made available under the
-terms of the Eclipse Public License 2.0 which is available at
-http://www.eclipse.org/legal/epl-2.0.
-
-This Source Code may also be made available under the following Secondary
-Licenses when the conditions for such availability set forth in the Eclipse
-Public License, v. 2.0 are satisfied: GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or (at your
-option) any later version, with the GNU Classpath Exception which is available
-at https://www.gnu.org/software/classpath/license.html.
+terms of the Eclipse Public License 1.0.

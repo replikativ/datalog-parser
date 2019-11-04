@@ -1,5 +1,7 @@
 (ns datalog.parser.impl.proto)
 
+#?(:clj (set! *warn-on-reflection* true))
+
 (defprotocol ITraversable
   (-collect      [_ pred acc])
   (-collect-vars [_ acc])
