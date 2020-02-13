@@ -413,6 +413,24 @@
 (defn parse-clauses [clauses]
   (parse-seq parse-clause clauses))
 
+(defn parse-limit
+  "Parse pagination limit"
+  [limit]
+  (when limit
+    (if (= (type (first limit)) java.lang.Long )
+      (first limit)
+      (raise "Cannot parse :limit, expected java.lang.Long"
+             {:error :parser/limit, :limit limit}))))
+
+(defn parse-offset
+  "Parse pagination offset"
+  [offset]
+  (when offset
+    (if (= (type (first offset)) java.lang.Long)
+      (first offset)
+      (raise "Cannot parse :offset, expected java.lang.Long"
+             {:error :parser/offset, :offset offset}))))
+
 (defn parse-where [form]
   (or (parse-clauses form)
       (raise "Cannot parse :where clause, expected [clause+]"
