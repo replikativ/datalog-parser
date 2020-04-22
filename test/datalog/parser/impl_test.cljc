@@ -421,17 +421,44 @@
        (t/->DefaultSrc)
        [(t/->Variable '?e) (t/->Constant :follows) (t/->Variable '?x)])]))
 
-  (is (thrown-with-msg? ExceptionInfo #"Join variable not declared inside clauses: \[\?x\]"
-        (dp/parse-clause '(or-join [?x] [?y]))))
+  ;; These tests reflect the or-join semantics of Datomic Datalog, https://docs.datomic.com/on-prem/query.html
+  ;; TODO use record constructors instead of wordy literals as for rest in this buffer
+  (is (= (dp/parse-clause '(or-join [?x] [?y]))
+         '#datalog.parser.type.Or{:source #datalog.parser.type.DefaultSrc{},
+                                  :rule-vars #datalog.parser.type.RuleVars{:required nil,
+                                                                           :free [#datalog.parser.type.Variable{:symbol ?x}]},
+                                  :clauses [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{},
+                                                                         :pattern [#datalog.parser.type.Variable{:symbol ?y}]}]}))
+  (is (= (dp/parse-clause '(or-join [?x ?y] [?x ?y] [?y])) 
+             '#datalog.parser.type.Or{:source #datalog.parser.type.DefaultSrc{},
+                                      :rule-vars #datalog.parser.type.RuleVars{:required nil,
+                                                                               :free [#datalog.parser.type.Variable{:symbol ?x}
+                                                                                      #datalog.parser.type.Variable{:symbol ?y}]},
+                                      :clauses [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{},
+                                                                             :pattern [#datalog.parser.type.Variable{:symbol ?x}
+                                                                                       #datalog.parser.type.Variable{:symbol ?y}]}
+                                                #datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{},
+                                                                             :pattern [#datalog.parser.type.Variable{:symbol ?y}]}]}))
+
+  (is (= (dp/parse-clause '(or-join [?y]
+                                    (or-join [?x]
+                                             [?x :follows ?y])))
+         '#datalog.parser.type.Or{:source #datalog.parser.type.DefaultSrc{},
+                                  :rule-vars #datalog.parser.type.RuleVars{:required nil,
+                                                                           :free [#datalog.parser.type.Variable{:symbol ?y}]},
+                                  :clauses [#datalog.parser.type.Or{:source #datalog.parser.type.DefaultSrc{},
+                                                                    :rule-vars #datalog.parser.type.RuleVars{:required nil,
+                                                                                                             :free [#datalog.parser.type.Variable{:symbol ?x}]},
+                                                                    :clauses [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{},
+                                                                                                           :pattern [#datalog.parser.type.Variable{:symbol ?x}
+                                                                                                                                                                #datalog.parser.type.Constant{:value :follows} #datalog.parser.type.Variable{:symbol ?y}]}]}]}))
+
 
   (is (thrown-with-msg? ExceptionInfo #"Join variable not declared inside clauses: \[\?y\]"
         (dp/parse-clause '(or [?x] [?x ?y]))))
 
   (is (thrown-with-msg? ExceptionInfo #"Join variable not declared inside clauses: \[\?y\]"
         (dp/parse-clause '(or [?x] [?y]))))
-
-  (is (thrown-with-msg? ExceptionInfo #"Join variable not declared inside clauses: \[\?x\]"
-        (dp/parse-clause '(or-join [?x ?y] [?x ?y] [?y]))))
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse rule-vars"
         (dp/parse-clause '(or-join [] [?y]))))
@@ -443,9 +470,4 @@
         (dp/parse-clause '(or-join [?x]))))
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse 'or' clause"
-        (dp/parse-clause '(or))))
-
-  (is (thrown-with-msg? ExceptionInfo #"Join variable not declared inside clauses: \[\?y\]"
-        (dp/parse-clause '(or-join [?y]
-                                   (or-join [?x]
-                                            [?x :follows ?y]))))))
+        (dp/parse-clause '(or)))))

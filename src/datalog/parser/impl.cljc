@@ -328,6 +328,11 @@
     (raise "Join variables should not be empty"
            {:error :parser/where :form form})))
 
+(defn- validate-or-join-vars [vars clauses form]
+  (when (empty? vars)
+    (raise "Join variables should not be empty"
+           {:error :parser/where :form form})))
+
 (defn- validate-not [clause form]
   (validate-join-vars (:vars clause) (:clauses clause) form)
   clause)
@@ -364,6 +369,14 @@
       (validate-join-vars vars [clause] form))
     clause))
 
+(defn validate-or-join [clause form]
+  (let [{{required :required
+          free     :free} :rule-vars} clause
+        vars                          (concat required free)]
+    (doseq [clause (:clauses clause)]
+      (validate-or-join-vars vars [clause] form))
+    clause))
+
 (defn parse-and [form]
   (when (and (sequential? form) (= 'and (first form)))
     (let [clauses* (parse-clauses (next form))]
@@ -392,7 +405,7 @@
           (if (and vars* clauses*)
             (-> (Or. source* vars* clauses*)
                 (with-source form)
-                (validate-or form))
+                (validate-or-join form))
             (raise "Cannot parse 'or-join' clause, expected [ src-var? 'or-join' [variable+] clause+ ]"
                    {:error :parser/where, :form form})))))))
 
