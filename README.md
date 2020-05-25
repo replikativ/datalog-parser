@@ -1,9 +1,9 @@
 # datalog-parser <a href="https://clojars.org/io.lambdaforge/datalog-parser"> <img src="https://img.shields.io/clojars/v/io.lambdaforge/datalog-parser.svg" /></a>
 
-A Datalog parser.
+A Datalog parser. This parser is used by [Datahike](https://github.com/replikativ/datahike) and follows the Datalog dialect of [Datomic](https://www.datomic.com/).
 
 ## Usage
-Add `[io.lambdaforge/datalog-parser "0.1.1"]` to your `project.clj`. Start a repl and run:
+Add the current release of `io.lambdaforge/datalog-parser` to your `project.clj`. Start a repl and run:
 
 ```Clojure
 (require '[datalog.parser :as parser])
@@ -42,7 +42,7 @@ Unparsing support, missing types:
 
 ## License
 
-Copyright © 2019 lambdaforge UG (haftungsbeschränkt), Nikita Prokopov
+Copyright © 2020 lambdaforge UG (haftungsbeschränkt), Nikita Prokopov
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 1.0.
