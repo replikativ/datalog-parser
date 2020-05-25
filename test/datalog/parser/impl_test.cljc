@@ -29,14 +29,14 @@
     '[[_ [?x ...]] ...]
     (t/->BindColl
      (t/->BindTuple [(t/->BindIgnore)
-                      (t/->BindColl
-                       (t/->BindScalar (t/->Variable '?x)))]))
+                     (t/->BindColl
+                      (t/->BindScalar (t/->Variable '?x)))]))
 
     '[[?a ?b ?c]]
     (t/->BindColl
      (t/->BindTuple [(t/->BindScalar (t/->Variable '?a))
-                      (t/->BindScalar (t/->Variable '?b))
-                      (t/->BindScalar (t/->Variable '?c))])))
+                     (t/->BindScalar (t/->Variable '?b))
+                     (t/->BindScalar (t/->Variable '?c))])))
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse binding"
         (dp/parse-binding :key))))
@@ -57,8 +57,8 @@
     [(t/->BindScalar (t/->SrcVar '$))
      (t/->BindColl
       (t/->BindTuple [(t/->BindIgnore)
-                       (t/->BindColl
-                        (t/->BindScalar (t/->Variable '?x)))]))])
+                      (t/->BindColl
+                       (t/->BindScalar (t/->Variable '?x)))]))])
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse binding"
         (dp/parse-in ['?x :key]))))
@@ -105,9 +105,9 @@
 (deftest test-parse-find-elements
   (is (= (dp/parse-find '[(count ?b 1 $x) .])
          (t/->FindScalar (t/->Aggregate (t/->PlainSymbol 'count)
-                                          [(t/->Variable '?b)
-                                           (t/->Constant 1)
-                                           (t/->SrcVar '$x)])))))
+                                        [(t/->Variable '?b)
+                                         (t/->Constant 1)
+                                         (t/->SrcVar '$x)])))))
 
 (deftest clauses
   (are [form res] (= (set (dp/parse-rules form)) res)
@@ -140,7 +140,7 @@
 
        [(t/->RuleBranch
          (t/->RuleVars [(t/->Variable '?x) (t/->Variable '?y)]
-                        [(t/->Variable '?a) (t/->Variable '?b)])
+                       [(t/->Variable '?a) (t/->Variable '?b)])
          [(t/->Pattern (t/->DefaultSrc) [(t/->Placeholder)])])])}
 
     '[[(rule [?x])
@@ -429,16 +429,16 @@
                                                                            :free [#datalog.parser.type.Variable{:symbol ?x}]},
                                   :clauses [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{},
                                                                          :pattern [#datalog.parser.type.Variable{:symbol ?y}]}]}))
-  (is (= (dp/parse-clause '(or-join [?x ?y] [?x ?y] [?y])) 
-             '#datalog.parser.type.Or{:source #datalog.parser.type.DefaultSrc{},
-                                      :rule-vars #datalog.parser.type.RuleVars{:required nil,
-                                                                               :free [#datalog.parser.type.Variable{:symbol ?x}
-                                                                                      #datalog.parser.type.Variable{:symbol ?y}]},
-                                      :clauses [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{},
-                                                                             :pattern [#datalog.parser.type.Variable{:symbol ?x}
-                                                                                       #datalog.parser.type.Variable{:symbol ?y}]}
-                                                #datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{},
-                                                                             :pattern [#datalog.parser.type.Variable{:symbol ?y}]}]}))
+  (is (= (dp/parse-clause '(or-join [?x ?y] [?x ?y] [?y]))
+         '#datalog.parser.type.Or{:source #datalog.parser.type.DefaultSrc{},
+                                  :rule-vars #datalog.parser.type.RuleVars{:required nil,
+                                                                           :free [#datalog.parser.type.Variable{:symbol ?x}
+                                                                                  #datalog.parser.type.Variable{:symbol ?y}]},
+                                  :clauses [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{},
+                                                                         :pattern [#datalog.parser.type.Variable{:symbol ?x}
+                                                                                   #datalog.parser.type.Variable{:symbol ?y}]}
+                                            #datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{},
+                                                                         :pattern [#datalog.parser.type.Variable{:symbol ?y}]}]}))
 
   (is (= (dp/parse-clause '(or-join [?y]
                                     (or-join [?x]
@@ -451,7 +451,7 @@
                                                                                                              :free [#datalog.parser.type.Variable{:symbol ?x}]},
                                                                     :clauses [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{},
                                                                                                            :pattern [#datalog.parser.type.Variable{:symbol ?x}
-                                                                                                                                                                #datalog.parser.type.Constant{:value :follows} #datalog.parser.type.Variable{:symbol ?y}]}]}]}))
+                                                                                                                                                  #datalog.parser.type.Constant{:value :follows} #datalog.parser.type.Variable{:symbol ?y}]}]}]}))
 
 
   (is (thrown-with-msg? ExceptionInfo #"Join variable not declared inside clauses: \[\?y\]"
@@ -471,3 +471,16 @@
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse 'or' clause"
         (dp/parse-clause '(or)))))
+
+
+(deftest test-parse-return-maps
+  (testing "failed parsing"
+    (is (thrown-with-msg? ExceptionInfo #"Only one of these three options is allowed: :keys :strs :syms"
+          (dp/parse-return-maps {:keys '("keys" "strs" "syms") :syms '("keys" "strs" "syms")}))))
+  (testing "parsing correct options"
+    (is (= #datalog.parser.type.ReturnMaps{:mapping-type :keys, :mapping-keys (#datalog.parser.type.MappingKey{:mapping-key "keys"} #datalog.parser.type.MappingKey{:mapping-key "strs"} #datalog.parser.type.MappingKey{:mapping-key "syms"})}
+           (dp/parse-return-maps {:keys '("keys" "strs" "syms")})))
+    (is (= #datalog.parser.type.ReturnMaps{:mapping-type :strs, :mapping-keys (#datalog.parser.type.MappingKey{:mapping-key "keys"} #datalog.parser.type.MappingKey{:mapping-key "strs"} #datalog.parser.type.MappingKey{:mapping-key "syms"})}
+           (dp/parse-return-maps {:strs '("keys" "strs" "syms")})))
+    (is (= #datalog.parser.type.ReturnMaps{:mapping-type :syms, :mapping-keys (#datalog.parser.type.MappingKey{:mapping-key "keys"} #datalog.parser.type.MappingKey{:mapping-key "strs"} #datalog.parser.type.MappingKey{:mapping-key "syms"})}
+           (dp/parse-return-maps {:syms '("keys" "strs" "syms")})))))
