@@ -32,6 +32,7 @@
 ;; rules-var      = the symbol "%"
 ;; constant       = any non-variable data literal
 ;; plain-symbol   = symbol that does not begin with "$" or "?"
+;; mapping-key    = key for mapping the result
 
 (deftrecord Placeholder [])
 (deftrecord Variable    [symbol])
@@ -125,6 +126,16 @@
 (deftrecord RuleBranch [vars clauses])
 (deftrecord Rule       [name branches])
 
+;; return maps need one or many keys to map to the result
+;; mapping-key    = plain-symbol
+;; mapping-type   = keyword
+;; return-mapping = {mapping-type [mapping-keys]}
+
+(deftrecord MappingKey [mapping-key])
+(deftrecord ReturnMaps [mapping-type mapping-keys])
+
+(def return-maps? (partial instance? ReturnMaps))
+
 ;; q* prefix because of https"//dev.clojure.org/jira/browse/CLJS-2237"
 (deftrecord Query [qfind qwith qin qwhere])
 
@@ -132,9 +143,10 @@
   ([form] (collect-vars [] form))
   ([acc form]
    (cond
-     (variable?      form) (conj acc form)
-     (not?           form) (into acc (:vars form))
-     (or?            form) (collect-vars acc (:rule-vars form))
-     (p/traversable? form) (p/-collect-vars form acc)
-     (sequential?    form) (reduce collect-vars acc form)
-     :else                 acc)))
+     (variable?      form)  (conj acc form)
+     (not?           form)  (into acc (:vars form))
+     (or?            form)  (collect-vars acc (:rule-vars form))
+     (return-maps?   form)  (into acc (:mapping-keys form))
+     (p/traversable? form)  (p/-collect-vars form acc)
+     (sequential?    form)  (reduce collect-vars acc form)
+     :else                  acc)))
