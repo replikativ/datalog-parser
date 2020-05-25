@@ -4,14 +4,14 @@
             [datalog.parser.util                :refer [postwalk]]
             [datalog.parser.impl.proto :as p    :refer [traversable?]]
             [datalog.parser.impl.util :as util
-            #?(:cljs :refer-macros :clj :refer) [raise forv]]
+              #?(:cljs :refer-macros :clj :refer) [raise forv]]
             #?(:cljs [datalog.parser.type :refer
-                     [Not And Or Aggregate SrcVar RulesVar RuleExpr
-                      RuleVars Variable]]))
+                      [Not And Or Aggregate SrcVar RulesVar RuleExpr
+                       RuleVars Variable ReturnMaps MappingKey]]))
   (:refer-clojure :rename  {distinct? core-distinct?})
   #?(:clj
-    (:import [datalog.parser.type
-              Not And Or Aggregate SrcVar RulesVar RuleExpr RuleVars Variable])))
+     (:import [datalog.parser.type
+               Not And Or Aggregate SrcVar RulesVar RuleExpr RuleVars Variable ReturnMaps MappingKey])))
 
 #?(:clj (set! *warn-on-reflection* true))
 
@@ -421,7 +421,7 @@
       (raise (str "Cannot parse clause, expected (data-pattern | pred-expr |"
                   " fn-expr | rule-expr | not-clause | not-join-clause |"
                   " or-clause | or-join-clause)")
-             {:error :parser/where, :form form} )))
+             {:error :parser/where, :form form})))
 
 (defn parse-clauses [clauses]
   (parse-seq parse-clause clauses))
@@ -430,7 +430,7 @@
   "Parse pagination limit"
   [limit]
   (when limit
-    (if (= (type (first limit)) java.lang.Long )
+    (if (= (type (first limit)) java.lang.Long)
       (first limit)
       (raise "Cannot parse :limit, expected java.lang.Long"
              {:error :parser/limit, :limit limit}))))
@@ -443,6 +443,19 @@
       (first offset)
       (raise "Cannot parse :offset, expected java.lang.Long"
              {:error :parser/offset, :offset offset}))))
+
+(defn parse-return-maps
+  "Parse request to return maps"
+  [return-maps]
+  (let [type    (first (keys return-maps))
+        toomany (> (count (keys return-maps)) 1)]
+    (if toomany
+      (raise "Only one of these three options is allowed: :keys :strs :syms"
+             {:error :parser/return-maps, :return-maps return-maps})
+      (when type
+        (ReturnMaps.
+         type
+         (map #(MappingKey. %) (get return-maps type)))))))
 
 (defn parse-where [form]
   (or (parse-clauses form)
@@ -510,19 +523,26 @@
       parsed)))
 
 (defn assert-valid [q form]
-  (let [find-vars  (t/collect-vars #{} (:qfind  q))
-        with-vars  (set                (:qwith  q))
-        in-vars    (t/collect-vars #{} (:qin    q))
-        where-vars (t/collect-vars #{} (:qwhere q))
-        unknown    (set/difference (set/union find-vars with-vars)
-                                   (set/union where-vars in-vars))
-        shared     (set/intersection find-vars with-vars)]
+  (let [find-vars    (t/collect-vars #{} (:qfind  q))
+        with-vars    (set                (:qwith  q))
+        in-vars      (t/collect-vars #{} (:qin    q))
+        where-vars   (t/collect-vars #{} (:qwhere q))
+        mapping-keys (t/collect-vars #{} (:qreturnmaps q))
+        unknown      (set/difference (set/union find-vars with-vars)
+                                     (set/union where-vars in-vars))
+        shared       (set/intersection find-vars with-vars)
+        mapped?      (or
+                      (empty? mapping-keys)
+                      (= (count mapping-keys) (count find-vars)))]
     (when-not (empty? unknown)
       (raise "Query for unknown vars: " (mapv :symbol unknown)
              {:error :parser/query, :vars unknown, :form form}))
     (when-not (empty? shared)
       (raise ":find and :with should not use same variables: " (mapv :symbol shared)
-             {:error :parser/query, :vars shared, :form form})))
+             {:error :parser/query, :vars shared, :form form}))
+    (when-not mapped?
+      (raise "Count of :keys/:strs/:syms must match count of :find"
+             {:error :parser/query, :keys mapping-keys, :values in-vars, :form form})))
 
   (let [in-vars    (t/collect-vars        (:qin q))
         in-sources (collect-type SrcVar   (:qin q))
