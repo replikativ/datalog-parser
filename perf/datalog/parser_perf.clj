@@ -14,6 +14,8 @@
 (deftest parse
   ;;; Baseline
   ;;; Execution time mean : 1.787494 ms
+  ;;; Extend based:
+  ;;; Execution time mean : 59.656711 µs ~ 30x faster
   (cc/bench (parser/parse q)))
 
 (comment

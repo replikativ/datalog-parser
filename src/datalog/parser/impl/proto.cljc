@@ -7,10 +7,19 @@
   (-collect-vars [_ acc])
   (-postwalk     [_ f]))
 
-(def traversable? (partial satisfies? ITraversable))
+(defprotocol Traversable
+  (-traversable? [_]))
 
 (defprotocol IFindVars
   (-find-vars [this]))
 
 (defprotocol IFindElements
   (find-elements [this]))
+
+(extend-type #?(:clj Object :cljs object)
+  Traversable
+  (-traversable? [_] false))
+
+(extend-type nil
+  Traversable
+  (-traversable? [_] false))

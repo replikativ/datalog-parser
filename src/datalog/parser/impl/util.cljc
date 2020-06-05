@@ -1,5 +1,5 @@
 (ns ^:no-doc datalog.parser.impl.util
-  (:require [datalog.parser.impl.proto :as proto :refer [traversable?]]
+  (:require [datalog.parser.impl.proto :as proto]
             [datalog.parser.util       :as util]
             [clojure.string            :as str])
   (:refer-clojure :exclude [seqable?]))
@@ -66,7 +66,7 @@
   ([pred form acc]
    (cond
      (pred form)         (conj acc form)
-     (traversable? form) (proto/-collect form pred acc)
+     (proto/-traversable? form) (proto/-collect form pred acc)
      (seqable? form)     (reduce
                           (fn collector [acc form]
                             (collect pred form acc))
