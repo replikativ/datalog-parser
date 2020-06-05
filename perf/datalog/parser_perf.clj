@@ -12,6 +12,8 @@
          [?e :user/lastName ?lname]])
 
 (deftest parse
+  ;;; Baseline
+  ;;; Execution time mean : 1.787494 ms
   (cc/bench (parser/parse q)))
 
 (comment
