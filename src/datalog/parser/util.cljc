@@ -1,12 +1,12 @@
 (ns datalog.parser.util
-  (:require [datalog.parser.impl.proto :as proto :refer [traversable?]]))
+  (:require [datalog.parser.impl.proto :as proto]))
 
 #?(:clj (set! *warn-on-reflection* true))
 
 (defn postwalk [form f]
   ;; additional handling for maps and records that keeps structure type
   (cond
-    (traversable? form) (f (proto/-postwalk form f))
+    (proto/-traversable? form) (f (proto/-postwalk form f))
     (map? form)         (f (reduce-kv
                             (fn map-walker [form k v]
                               (assoc form k (postwalk v f)))

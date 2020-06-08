@@ -16,6 +16,8 @@
      (let [[f pred acc]  (map gensym ["f" "pred" "acc"])
            walked-fields (map #(list `util/postwalk % f) fields)]
        `(defrecord ~tagname ~fields
+          p/Traversable
+          (~'-traversable? [_#] true)
           p/ITraversable
           (~'-postwalk [this# ~f]
            (-> (new ~tagname ~@walked-fields)
@@ -143,10 +145,10 @@
   ([form] (collect-vars [] form))
   ([acc form]
    (cond
-     (variable?      form)  (conj acc form)
-     (not?           form)  (into acc (:vars form))
-     (or?            form)  (collect-vars acc (:rule-vars form))
-     (return-maps?   form)  (into acc (:mapping-keys form))
-     (p/traversable? form)  (p/-collect-vars form acc)
-     (sequential?    form)  (reduce collect-vars acc form)
+     (variable?       form)  (conj acc form)
+     (not?            form)  (into acc (:vars form))
+     (or?             form)  (collect-vars acc (:rule-vars form))
+     (return-maps?    form)  (into acc (:mapping-keys form))
+     (p/-traversable? form)  (p/-collect-vars form acc)
+     (sequential?     form)  (reduce collect-vars acc form)
      :else                  acc)))

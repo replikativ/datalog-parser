@@ -23,6 +23,29 @@ Add the current release of `io.lambdaforge/datalog-parser` to your `project.clj`
 
 For more examples look at the [tests](test/datalog/parser_test.cljc).
 
+### Benchmarking and Profiling
+
+To benchmark or profile the parser, change to the parser-perf namespace
+or require it:
+
+```clojure
+(in-ns 'datalog.parser-perf')
+```
+
+Then run the parse benchmark or profiler:
+
+```clojure
+(parse)
+(profile)
+```
+
+To see the produced flame graph, you can start a web server at `port`:
+
+```clojure
+(in-ns 'datalog.parser-perf')
+(prof/server-files port)
+```
+
 ## TODO
 
 ## 0.2.0
