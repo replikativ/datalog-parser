@@ -1,4 +1,11 @@
-# datalog-parser <a href="https://clojars.org/io.lambdaforge/datalog-parser"> <img src="https://img.shields.io/clojars/v/io.lambdaforge/datalog-parser.svg" /></a>
+# datalog-parser
+
+<p align="center">
+<a href="https://clojurians.slack.com/archives/CB7GJAN0L"><img src="https://img.shields.io/badge/clojurians%20slack-join%20channel-blueviolet"/></a>
+<a href="https://clojars.org/io.lambdaforge/datalog-parser"> <img src="https://img.shields.io/clojars/v/io.lambdaforge/datalog-parser.svg" /></a>
+<a href="https://circleci.com/gh/lambdaforge/datalog-parser"><img src="https://circleci.com/gh/lambdaforge/datalog-parser.svg?style=shield"/></a>
+<a href="https://versions.deps.co/lambdaforge/datalog-parser" title="Dependencies Status"><img src="https://versions.deps.co/lambdaforge/datalog-parser/status.svg" /></a>
+</p>
 
 A Datalog parser. This parser is used by [Datahike](https://github.com/replikativ/datahike) and follows the Datalog dialect of [Datomic](https://www.datomic.com/).
 
