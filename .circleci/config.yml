@@ -50,13 +50,43 @@ jobs:
           command: lein test
           no_output_timeout: 5m
 
-  deploy:
+  build:
     executor: leiningen
     steps:
       - attach_workspace:
           at: /home/circleci
       - run:
-          command: lein deploy clojars
+          name: Build
+          command: lein uberjar
+          no_output_timeout: 5m
+
+  deploy-snapshot:
+    executor: leiningen
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+      - run:
+          command: |
+            VERSION=$(head -n 1 project.clj | awk '{print $3}' | tr -d \")
+            if [[ ${VERSION} =~ .*-SNAPSHOT ]]; then
+                lein deploy clojars
+            else
+                exit 0
+            fi
+  deploy-release:
+    executor: leiningen
+    steps:
+      - attach_workspace:
+          at: /home/circleci
+      - run:
+          name: Deploy Release to Clojars
+          command: |
+            VERSION=$(head -n 1 project.clj | awk '{print $3}' | tr -d \")
+            if [[ ${VERSION} =~ .*-SNAPSHOT ]]; then
+                exit 0
+            else
+                lein deploy clojars
+            fi
 
 workflows:
   build_and_test:
@@ -65,10 +95,22 @@ workflows:
       - unittest:
           requires:
             - setup
-      - deploy:
+      - build:
+          requires:
+            - setup
+      - deploy-snapshot:
+          filters:
+            branches:
+              only: development
+          requires:
+            - setup
+            - unittest
+            - build
+      - deploy-release:
           filters:
             branches:
               only: master
           requires:
             - setup
             - unittest
+            - build
