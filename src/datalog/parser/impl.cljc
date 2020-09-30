@@ -522,7 +522,7 @@
         (recur (update parsed key (fnil conj []) q) key qs))
       parsed)))
 
-(defn assert-valid [q form]
+(defn assert-valid [q form {:keys [find] :as mform}]
   (let [find-vars    (t/collect-vars #{} (:qfind  q))
         with-vars    (set                (:qwith  q))
         in-vars      (t/collect-vars #{} (:qin    q))
@@ -533,7 +533,7 @@
         shared       (set/intersection find-vars with-vars)
         mapped?      (or
                       (empty? mapping-keys)
-                      (= (count mapping-keys) (count find-vars)))]
+                      (= (count mapping-keys) (count find)))]
     (when-not (empty? unknown)
       (raise "Query for unknown vars: " (mapv :symbol unknown)
              {:error :parser/query, :vars unknown, :form form}))
@@ -571,3 +571,4 @@
                (empty? rules-vars))
       (raise "Missing rules var '%' in :in"
              {:error :parser/query, :form form}))))
+
