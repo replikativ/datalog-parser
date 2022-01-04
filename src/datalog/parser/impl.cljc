@@ -60,7 +60,8 @@
     (RulesVar.)))
 
 (defn parse-constant [form]
-  (when (not (symbol? form))
+  (when-not (and (symbol? form)
+                 (= (first (name form)) \?))
     (datalog.parser.type.Constant. form)))
 
 (defn parse-plain-symbol [form]
@@ -79,8 +80,8 @@
 
 (defn parse-fn-arg [form]
   (or (parse-variable form)
-      (parse-constant form)
-      (parse-src-var  form)))
+      (parse-src-var  form)
+      (parse-constant form)))
 
 ;; rule-vars = [ variable+ | ([ variable+ ] variable*) ]
 
