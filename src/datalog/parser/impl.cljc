@@ -514,14 +514,15 @@
         (datalog.parser.type.Rule. name branches)))))
 
 (defn query->map [query]
-  (loop [parsed {}
-         key    nil
-         qs     query]
-    (if-let [[q & qs] (not-empty qs)]
-      (if (keyword? q)
-        (recur parsed q qs)
-        (recur (update parsed key (fnil conj []) q) key qs))
-      parsed)))
+  (let [allowed-keys #{:find :with :in :where :limit :offset :keys :syms :strs}]
+    (loop [parsed {}
+           key    nil
+           qs     query]
+      (if-let [[q & qs] (not-empty qs)]
+        (if (allowed-keys q)
+          (recur parsed q qs)
+          (recur (update parsed key (fnil conj []) q) key qs))
+        parsed))))
 
 (defn assert-valid [q form {:keys [find] :as mform}]
   (let [find-vars    (t/collect-vars #{} (:qfind  q))

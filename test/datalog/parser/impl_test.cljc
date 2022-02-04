@@ -479,6 +479,44 @@
         (dp/parse-clause '(or)))))
 
 
+(deftest test-query->map
+  (testing "correct parsing"
+    (is (= '{}
+           (dp/query->map {})))
+    (is (= '{}
+           (dp/query->map [])))
+
+    (is (=  '{nil [:anything else :and more]}
+            (dp/query->map '[:anything else
+                             :and more])))
+    (is (= '{:find [?a ?b ?c]
+             :in [?d ?e ?f]
+             :keys [?g ?h ?i]
+             :where [[?i ?j ?k]]}
+           (dp/query->map '[:find ?a ?b ?c
+                            :in ?d ?e ?f
+                            :keys ?g ?h ?i
+                            :where [?i ?j ?k]])))
+    (is (= '{:find [?a ?b ?c]
+             :in [?d ?e ?f]
+             :keys [?g :h :i]
+             :where [[?i ?j ?k]]}
+           (dp/query->map '[:find ?a ?b ?c
+                            :in ?d ?e ?f
+                            :keys ?g :h :i
+                            :where [?i ?j ?k]]))))
+  (testing "non-used keys"
+    (is (=  '{nil [:anything else :and more]}
+            (dp/query->map '[:anything else
+                             :and more])))
+    (is (=  '{:find [a b c :anything else]
+              :in [d e f :and more]}
+            (dp/query->map '[:find a b c
+                             :anything else
+                             :in d e f
+                             :and more])))))
+
+
 (deftest test-parse-return-maps
   (testing "failed parsing"
     (is (thrown-with-msg? ExceptionInfo #"Only one of these three options is allowed: :keys :strs :syms"
