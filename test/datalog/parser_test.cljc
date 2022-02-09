@@ -101,13 +101,3 @@
                '[:find ?e :strs '(foo bar) :keys '("foo" "bar") :where [?e] :offset 666]
                "Only one of these three options is allowed: :keys :strs :syms"))
 
-(comment
-
-  (parser/parse '[:find ?e
-                  :in ?fname ?lname
-                  :keys :foo
-                  :where [?e :user/firstName ?fname]
-                  [?e :user/lastName ?lname]])
-
-
-  )
