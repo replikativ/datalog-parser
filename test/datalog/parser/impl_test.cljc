@@ -119,9 +119,7 @@
          (t/->RuleVars nil [(t/->Variable '?x)])
          [(t/->Pattern
            (t/->DefaultSrc)
-           [(t/->Variable '?x) (t/->Constant :name) (t/->Placeholder)])])])})
-  (is (thrown-with-msg? ExceptionInfo #"Reference to the unknown variable"
-        (dp/parse-rules '[[(rule ?x) [?x :name ?y]]]))))
+           [(t/->Variable '?x) (t/->Constant :name) (t/->Placeholder)])])])}))
 
 (deftest rule-vars
   (are [form res] (= (set (dp/parse-rules form)) res)
@@ -221,7 +219,7 @@
 
     '[$x _ :name ?v]
     (t/->Pattern (t/->SrcVar '$x) [(t/->Placeholder) (t/->Constant :name) (t/->Variable '?v)])
-    
+
     '[$x _ sym ?v]
     (t/->Pattern (t/->SrcVar '$x) [(t/->Placeholder) (t/->Constant 'sym) (t/->Variable '?v)])
 
@@ -266,7 +264,7 @@
 
     '($1 friends ?x ?y)
     (t/->RuleExpr (t/->SrcVar '$1) (t/->PlainSymbol 'friends) [(t/->Variable '?x) (t/->Variable '?y)])
-    
+
     '(friends something)
     (t/->RuleExpr (t/->DefaultSrc) (t/->PlainSymbol 'friends) [(t/->Constant 'something)]))
 

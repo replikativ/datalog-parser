@@ -463,14 +463,6 @@
       (raise "Cannot parse :where clause, expected [clause+]"
              {:error :parser/where, :form form})))
 
-(defn validate-vars [vars clauses form]
-  (let [declared-vars   (collect-type Variable vars    #{})
-        used-vars       (collect-type Variable clauses #{})
-        undeclared-vars (set/difference used-vars declared-vars)]
-    (when-not (empty? undeclared-vars)
-      (raise "Reference to the unknown variables: " (map :symbol undeclared-vars)
-             {:error :parser/rule, :form form, :vars undeclared-vars}))))
-
 (defn parse-rule [form]
   (if (sequential? form)
     (let [[head & clauses] form]
@@ -483,7 +475,6 @@
               clauses* (or (not-empty (parse-clauses clauses))
                            (raise "Rule branch should have clauses"
                                   {:error :parser/rule, :form form}))]
-          (validate-vars vars* clauses* form)
           {:name    name*
            :vars    vars*
            :clauses clauses*})
@@ -573,4 +564,3 @@
                (empty? rules-vars))
       (raise "Missing rules var '%' in :in"
              {:error :parser/query, :form form}))))
-
