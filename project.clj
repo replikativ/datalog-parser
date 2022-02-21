@@ -1,4 +1,4 @@
-(defproject io.lambdaforge/datalog-parser "0.1.10"
+(defproject io.lambdaforge/datalog-parser "0.1.11"
   :description  "Datalog parser."
   :url          "https://github.com/lambdaforge/datalog-parser"
   :license      {:name "EPL 1.0"
