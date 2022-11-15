@@ -12,3 +12,6 @@ pom.xml.asc
 .hg/
 *.iml
 /.idea
+.clj-kondo/
+.cpcache/
+.lsp/

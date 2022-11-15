@@ -1,116 +1,63 @@
 version: 2.1
 
-executors:
-  leiningen:
-    docker:
-      - image: circleci/clojure:openjdk-8-lein-2.9.3
-    environment:
-      LEIN_ROOT: nbd
-      JVM_OPTS: -Xmx3200m
-    working_directory: /home/circleci/datalog-parser
+orbs:
+  tools: replikativ/clj-tools@0
 
 jobs:
-  setup:
-    executor: leiningen
+  build:
+    executor: tools/clojurecli
     steps:
-      - restore_cache:
-          keys:
-            - source-{{ .Branch }}-{{ .Revision }}
-            - source-{{ .Branch }}
-            - source-
-      - checkout
-      - save_cache:
-          key: source-{{ .Branch }}-{{ .Revision }}
-          paths:
-            - .git
-      - restore_cache:
-          keys:
-            - deps-{{ checksum "project.clj" }}
-            - deps-
-      - run: lein deps
-      - save_cache:
-          key: deps-{{ checksum "project.clj" }}
-          paths:
-            - /home/circleci/.m2
-            - /home/circleci/.lein
+      - attach_workspace:
+          at: /home/circleci
+      - run:
+          name: Clean
+          command: clojure -T:build clean
+      - run:
+          name: Build
+          command: clojure -T:build jar
+          no_output_timeout: 5m
       - persist_to_workspace:
           root: /home/circleci/
           paths:
             - .m2
-            - datalog-parser
-            - bin
-
-  unittest:
-    executor: leiningen
-    steps:
-      - attach_workspace:
-          at: /home/circleci
-      - run:
-          name: Run Unittests
-          command: lein test
-          no_output_timeout: 5m
-
-  build:
-    executor: leiningen
-    steps:
-      - attach_workspace:
-          at: /home/circleci
-      - run:
-          name: Build
-          command: lein uberjar
-          no_output_timeout: 5m
-
-  deploy-snapshot:
-    executor: leiningen
-    steps:
-      - attach_workspace:
-          at: /home/circleci
-      - run:
-          command: |
-            VERSION=$(head -n 1 project.clj | awk '{print $3}' | tr -d \")
-            if [[ ${VERSION} =~ .*-SNAPSHOT ]]; then
-                lein deploy clojars
-            else
-                exit 0
-            fi
-  deploy-release:
-    executor: leiningen
-    steps:
-      - attach_workspace:
-          at: /home/circleci
-      - run:
-          name: Deploy Release to Clojars
-          command: |
-            VERSION=$(head -n 1 project.clj | awk '{print $3}' | tr -d \")
-            if [[ ${VERSION} =~ .*-SNAPSHOT ]]; then
-                exit 0
-            else
-                lein deploy clojars
-            fi
+            - .npm
+            - replikativ
 
 workflows:
-  build_and_test:
+  build_test_and_deploy:
     jobs:
-      - setup
-      - unittest:
+      - tools/setup:
+          context: dockerhub-deploy
+          setup_cljs: false
+      - tools/unittest:
+          context: dockerhub-deploy
           requires:
-            - setup
+            - tools/setup
+      - tools/format:
+          context: dockerhub-deploy
+          requires:
+            - tools/setup
       - build:
+          context: dockerhub-deploy
           requires:
-            - setup
-      - deploy-snapshot:
+            - tools/setup
+      - tools/deploy:
+          context:
+            - dockerhub-deploy
+            - clojars-deploy
           filters:
             branches:
-              only: development
+              only: main
           requires:
-            - setup
-            - unittest
+            - tools/unittest
+            - tools/format
             - build
-      - deploy-release:
+      - tools/release:
+          context:
+            - dockerhub-deploy
+            - github-token
           filters:
             branches:
-              only: master
+              only: main
           requires:
-            - setup
-            - unittest
-            - build
+            - tools/deploy
