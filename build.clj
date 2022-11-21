@@ -5,7 +5,7 @@
             [org.corfield.build :as bb])
   (:import (clojure.lang ExceptionInfo)))
 
-(def lib 'io.lambdaforge/datalog-parser)
+(def lib 'io.replikativ/datalog-parser)
 (def version (format "0.2.%s" (b/git-count-revs nil)))
 (def current-commit (gh/current-commit))
 (def class-dir "target/classes")
@@ -59,7 +59,7 @@
         result))))
 
 (defn try-release []
-  (try (gh/overwrite-asset {:org "lambdaforge"
+  (try (gh/overwrite-asset {:org "replikativ"
                             :repo (name lib)
                             :tag version
                             :commit current-commit
