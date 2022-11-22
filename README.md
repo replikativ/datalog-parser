@@ -9,6 +9,8 @@
 
 A Datalog parser. This parser is used by [Datahike](https://github.com/replikativ/datahike) and follows the Datalog dialect of [Datomic](https://www.datomic.com/).
 
+Note: This repository has been moved from the [lambdaforge organization](https://github.com/replikativ) to [replikativ](https://github.com/replikativ). So, you will find older releases of the parser at the [lambdaforge clojars page](https://clojars.org/io.lambdaforge/datalog-parser).
+
 ## Usage
 Add the current release of `io.replikativ/datalog-parser` to your `project.clj`. Start a repl and run:
 
