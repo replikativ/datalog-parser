@@ -2,15 +2,17 @@
 
 <p align="center">
 <a href="https://clojurians.slack.com/archives/CB7GJAN0L"><img src="https://img.shields.io/badge/clojurians%20slack-join%20channel-blueviolet"/></a>
-<a href="https://clojars.org/io.lambdaforge/datalog-parser"> <img src="https://img.shields.io/clojars/v/io.lambdaforge/datalog-parser.svg" /></a>
-<a href="https://circleci.com/gh/lambdaforge/datalog-parser"><img src="https://circleci.com/gh/lambdaforge/datalog-parser.svg?style=shield"/></a>
-<a href="https://versions.deps.co/lambdaforge/datalog-parser" title="Dependencies Status"><img src="https://versions.deps.co/lambdaforge/datalog-parser/status.svg" /></a>
+<a href="https://clojars.org/io.replikativ/datalog-parser"> <img src="https://img.shields.io/clojars/v/io.replikativ/datalog-parser.svg" /></a>
+<a href="https://circleci.com/gh/replikativ/datalog-parser"><img src="https://circleci.com/gh/replikativ/datalog-parser.svg?style=shield"/></a>
+<a href="https://versions.deps.co/replikativ/datalog-parser" title="Dependencies Status"><img src="https://versions.deps.co/replikativ/datalog-parser/status.svg" /></a>
 </p>
 
 A Datalog parser. This parser is used by [Datahike](https://github.com/replikativ/datahike) and follows the Datalog dialect of [Datomic](https://www.datomic.com/).
 
+Note: This repository has been moved from the [lambdaforge organization](https://github.com/replikativ) to [replikativ](https://github.com/replikativ). So, you will find older releases of the parser at the [lambdaforge clojars page](https://clojars.org/io.lambdaforge/datalog-parser).
+
 ## Usage
-Add the current release of `io.lambdaforge/datalog-parser` to your `project.clj`. Start a repl and run:
+Add the current release of `io.replikativ/datalog-parser` to your `project.clj`. Start a repl and run:
 
 ```Clojure
 (require '[datalog.parser :as parser])
