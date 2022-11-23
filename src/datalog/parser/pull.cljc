@@ -81,12 +81,9 @@
     (unlimited-recursion? spec) (PullRecursionLimit. nil)
     (pos? spec)                 (PullRecursionLimit. spec)))
 
-(defn- maybe-attr-expr? [spec]
-  (and (sequential? spec) (= 3 (count spec))))
-
 (def ^:private limit? #{'limit :limit "limit"})
 
-(defn- parse-limit-expr [spec]
+(defn- parse-legacy-limit-expr [spec]
   (let [[limit-sym attr-name-spec pos-num] spec]
     (when (limit? limit-sym)
       (if-let [attr-name (and (or (nil? pos-num) (pos? pos-num))
@@ -97,7 +94,7 @@
 
 (def ^:private default? #{'default :default "default"})
 
-(defn- parse-default-expr [spec]
+(defn- parse-legacy-default-expr [spec]
   (let [[default-sym attr-name-spec default-val] spec]
     (when (default? default-sym)
       (if-let [attr-name (parse-attr-name attr-name-spec)]
@@ -105,16 +102,41 @@
         (raise "Expected [\"default\" attr-name any-value]"
                {:error :parser/pull, :fragment spec})))))
 
+(def ^:private opt? #{:as :limit :default})
+
+(defn- parse-attr-with-opts [spec]
+  (when (sequential? spec)
+    (let [[attr-name-spec & opts-spec] spec]
+      (if-some [attr-name (parse-attr-name attr-name-spec)]
+        (if (even? (count opts-spec))
+          (if-let [invalid-opt (first (drop-while opt? (take-nth 2 opts-spec)))]
+            (raise (str "Invalid attribute option: " invalid-opt)
+                   {:error :parser/pull, :fragment spec})
+            (PullAttrWithOpts. attr-name (apply array-map opts-spec)))
+          (raise "Option list must contain even number of elements"
+                 {:error :parser/pull, :fragment spec}))
+        (raise "Expected [attr-name attr-option+]"
+               {:error :parser/pull, :fragment spec})))))
+
+(defn- parse-legacy-attr-expr [spec]
+  (when (and (sequential? spec)
+             (= 3 (count spec)))
+    (or (parse-legacy-limit-expr   spec)
+        (parse-legacy-default-expr spec))))
+
+(defn- parse-attr-expr [spec]
+  (or (parse-legacy-attr-expr spec)
+      (parse-attr-with-opts spec)))
+
 (defn- parse-map-spec-entry [[k v]]
   (if-let [attr-name (or (parse-attr-name k)
-                         (when (maybe-attr-expr? k)
-                           (parse-limit-expr k)))]
+                         (parse-attr-expr k))]
     (if-let [pattern-or-rec (or (parse-recursion-limit v)
                                 (parse-pattern v))]
       (PullMapSpecEntry. attr-name pattern-or-rec)
       (raise "Expected (pattern | recursion-limit)"
              {:error :parser/pull, :fragment [k v]}))
-    (raise "Expected (attr-name | limit-expr)"
+    (raise "Expected (attr-name | attr-expr)"
            {:error :parser/pull, :fragment [k v]})))
 
 (defn- parse-map-spec [spec]
@@ -122,25 +144,10 @@
     (assert (= 1 (count spec)) "Maps should contain exactly 1 entry")
     (parse-map-spec-entry (first spec))))
 
-(let [opt? #{:as :limit :default}]
-  (defn- parse-attr-with-opts [spec]
-    (when (sequential? spec)
-      (let [[attr-name-spec & opts-spec] spec]
-        (when-some [attr-name (parse-attr-name attr-name-spec)]
-          (when (and (even?  (count opts-spec))
-                     (every? opt? (take-nth 2 opts-spec)))
-            (PullAttrWithOpts. attr-name (apply array-map opts-spec))))))))
-
-(defn- parse-attr-expr [spec]
-  (when (maybe-attr-expr? spec)
-    (or (parse-limit-expr   spec)
-        (parse-default-expr spec))))
-
 (defn- parse-attr-spec [spec]
   (or (parse-attr-name      spec)
       (parse-wildcard       spec)
       (parse-map-spec       spec)
-      (parse-attr-with-opts spec)
       (parse-attr-expr      spec)
       (raise "Cannot parse attr-spec, expected: (attr-name | wildcard | map-spec | attr-expr)"
              {:error :parser/pull, :fragment spec})))
@@ -169,17 +176,18 @@
 grammar:
 
 ```
-pattern            = [attr-spec+]
-attr-spec          = attr-name | wildcard | map-spec | attr-expr
-attr-name          = an edn keyword that names an attr
-wildcard           = \"*\" or '*'
-map-spec           = { ((attr-name | limit-expr) (pattern | recursion-limit))+ }
-attr-with-opts     = [attr-name attr-options+]
-attr-options       = :as any-value | :limit (positive-number | nil) | :default any-value
-attr-expr          = limit-expr | default-expr
-limit-expr         = [\"limit\" attr-name (positive-number | nil)]
-default-expr       = [\"default\" attr-name any-value]
-recursion-limit    = positive-number | '...'
+pattern             = [attr-spec+]
+attr-spec           = attr-name | wildcard | map-spec | attr-expr
+attr-name           = an edn keyword that names an attr
+wildcard            = \"*\" or '*'
+map-spec            = { ((attr-name | attr-expr) (pattern | recursion-limit))+ }
+attr-expr           = attr-with-opts | legacy-attr-expr
+attr-with-opts      = [attr-name attr-option+]
+attr-option         = :as any-value | :limit (positive-number | nil) | :default any-value
+recursion-limit     = positive-number | '...'
+legacy-attr-expr    = legacy-limit-expr | legacy-default-expr
+legacy-limit-expr   = [(\"limit\" | 'limit') attr-name (positive-number | nil)]
+legacy-default-expr = [(\"default\" | 'default') attr-name any-value]
 ```"
   [pattern]
   (when (sequential? pattern)
