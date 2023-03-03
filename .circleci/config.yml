@@ -34,7 +34,7 @@ workflows:
           requires:
             - tools/unittest
             - tools/format
-            - build
+            - tools/build
       - tools/release:
           context:
             - dockerhub-deploy
