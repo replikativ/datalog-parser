@@ -35,7 +35,7 @@
 ;; range restriction
 
 (defn check-range-restriction
-  
+  "Checks range restriction of rules"
   [parsed-rules]
   (run! (fn [[rule-name branches]]
           (for [{:keys [vars clauses]} branches
