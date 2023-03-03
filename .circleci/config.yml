@@ -28,11 +28,14 @@ workflows:
     jobs:
       - tools/setup:
           context: dockerhub-deploy
-          setup_cljs: false
       - tools/unittest:
           context: dockerhub-deploy
           requires:
             - tools/setup
+      - tools/cljstest:
+         context: docker-deploy
+         requires:
+           - tools/build
       - tools/format:
           context: dockerhub-deploy
           requires:
