@@ -12,6 +12,12 @@ pom.xml.asc
 .hg/
 *.iml
 /.idea
-.clj-kondo/
+.cache
 .cpcache/
 .lsp/
+.cljs_node_repl/
+node_modules/
+out/
+package-lock.json
+package.json
+

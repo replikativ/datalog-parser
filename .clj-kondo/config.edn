@@ -1,0 +1,2 @@
+{:lint-as {datalog.parser.type/deftrecord clojure.core/defrecord
+           datalog.parser.impl.util/forv clojure.core/for}}
