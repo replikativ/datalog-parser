@@ -1,6 +1,5 @@
 (ns ^:no-doc datalog.parser.impl.util
   (:require [datalog.parser.impl.proto :as proto]
-            [datalog.parser.util       :as util]
             [clojure.string            :as str])
   (:refer-clojure :exclude [seqable?]))
 
@@ -27,8 +26,9 @@
 (defn- reverse-attr? [v]
   (str/starts-with? v "_"))
 
-(defn #?@(:clj  [^Boolean reverse-ref?]
-          :cljs [^boolean reverse-ref?]) [attr]
+(defn reverse-ref?
+  #?@(:clj  [^Boolean [attr]] 
+      :cljs [^boolean [attr]]) 
   (-> attr decompose-ref second reverse-attr?))
 
 (defn- invert-name [s]
@@ -44,22 +44,13 @@
 (defn prefixed-symbol? [sym prefix]
   (and (symbol? sym) (= (first (name sym)) prefix)))
 
-(defn- #?@(:clj  [^Boolean seqable?]
-           :cljs [^boolean seqable?])
-  [x]
+(defn- seqable?
+  #?@(:clj  [^Boolean [x]]
+      :cljs [^boolean [x]])
   (and (not (string? x))
        #?(:cljs (or (cljs.core/seqable? x)
                     (array? x))
-          :clj  (clojure.core/seqable? x)
-          ;; was
-          #_(or (seq? x)
-                    (instance? clojure.lang.Seqable x)
-                    (nil? x)
-                    (instance? Iterable x)
-                    (-> x .getClass .isArray)
-                    (instance? java.util.Map x)))))
-
-
+          :clj  (clojure.core/seqable? x))))
 
 (defn collect
   ([pred form] (collect pred form []))

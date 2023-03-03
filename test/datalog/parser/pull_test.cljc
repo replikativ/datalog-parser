@@ -1,7 +1,7 @@
 (ns datalog.parser.pull-test
   (:require [datalog.parser.pull :as dpp]
-            #?(:cljs [cljs.test    :as t :refer-macros [is are deftest testing]]
-               :clj  [clojure.test :as t :refer        [is are deftest testing]])))
+            #?(:cljs [cljs.test    :as t :refer-macros [is deftest testing]]
+               :clj  [clojure.test :as t :refer        [is deftest testing]])))
 
 #?(:cljs
    (def Throwable js/Error))

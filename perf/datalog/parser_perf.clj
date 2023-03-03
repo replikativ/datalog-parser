@@ -1,7 +1,6 @@
 (ns datalog.parser-perf
   (:require [clojure.test :refer [deftest]]
             [datalog.parser :as parser]
-            [datalog.parser.test.util]
             [criterium.core :as cc]
             [clj-async-profiler.core :as prof]))
 
