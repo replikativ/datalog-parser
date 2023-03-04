@@ -100,7 +100,7 @@
   ;; TODO test, check not-join
   Not
   (-unparse [{:keys [source vars clauses]}]
-    (concat (when-let [src (-unparse source)]
+    (concat (if-let [src (-unparse source)]
               (list src 'not)
               (list 'not))
             (map -unparse clauses)))
