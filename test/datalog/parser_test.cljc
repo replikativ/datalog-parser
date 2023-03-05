@@ -11,35 +11,161 @@
       :keys foo
       :where [?e :user/firstName ?fname]
       [?e :user/lastName ?lname]]
-    '#datalog.parser.type.Query{:qfind #datalog.parser.type.FindRel{:elements [#datalog.parser.type.Variable{:symbol ?e}]}, :qwith nil, :qin [#datalog.parser.type.BindScalar{:variable #datalog.parser.type.SrcVar{:symbol $}} #datalog.parser.type.BindScalar{:variable #datalog.parser.type.Variable{:symbol ?fname}} #datalog.parser.type.BindScalar{:variable #datalog.parser.type.Variable{:symbol ?lname}}], :qwhere [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{}, :pattern [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Constant{:value :user/firstName} #datalog.parser.type.Variable{:symbol ?fname}]} #datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{}, :pattern [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Constant{:value :user/lastName} #datalog.parser.type.Variable{:symbol ?lname}]}], :qlimit nil, :qoffset nil, :qreturnmaps #datalog.parser.type.ReturnMaps{:mapping-type :keys, :mapping-keys (#datalog.parser.type.MappingKey{:mapping-key foo})}}
+    '#datalog.parser.type.Query
+     {:qfind #datalog.parser.type.FindRel {:elements [#datalog.parser.type.Variable
+                                                       {:symbol ?e}]},
+      :qin [#datalog.parser.type.BindScalar {:variable #datalog.parser.type.SrcVar
+                                                        {:symbol $}}
+            #datalog.parser.type.BindScalar {:variable #datalog.parser.type.Variable
+                                                        {:symbol ?fname}}
+            #datalog.parser.type.BindScalar {:variable #datalog.parser.type.Variable
+                                                        {:symbol ?lname}}],
+      :qlimit nil,
+      :qoffset nil,
+      :qreturnmaps #datalog.parser.type.ReturnMaps
+                    {:mapping-keys (#datalog.parser.type.MappingKey {:mapping-key
+                                                                       foo}),
+                     :mapping-type :keys},
+      :qwhere [#datalog.parser.type.Pattern
+                {:pattern [#datalog.parser.type.Variable {:symbol ?e}
+                           #datalog.parser.type.Constant {:value :user/firstName}
+                           #datalog.parser.type.Variable {:symbol ?fname}],
+                 :source #datalog.parser.type.DefaultSrc {}}
+               #datalog.parser.type.Pattern
+                {:pattern [#datalog.parser.type.Variable {:symbol ?e}
+                           #datalog.parser.type.Constant {:value :user/lastName}
+                           #datalog.parser.type.Variable {:symbol ?lname}],
+                 :source #datalog.parser.type.DefaultSrc {}}],
+      :qwith nil}
 
     '[:find ?e
       :in $ ?fname ?lname
       :strs foo
       :where [?e :user/firstName ?fname]
       [?e :user/lastName ?lname]]
-    '#datalog.parser.type.Query{:qfind #datalog.parser.type.FindRel{:elements [#datalog.parser.type.Variable{:symbol ?e}]}, :qwith nil, :qin [#datalog.parser.type.BindScalar{:variable #datalog.parser.type.SrcVar{:symbol $}} #datalog.parser.type.BindScalar{:variable #datalog.parser.type.Variable{:symbol ?fname}} #datalog.parser.type.BindScalar{:variable #datalog.parser.type.Variable{:symbol ?lname}}], :qwhere [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{}, :pattern [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Constant{:value :user/firstName} #datalog.parser.type.Variable{:symbol ?fname}]} #datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{}, :pattern [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Constant{:value :user/lastName} #datalog.parser.type.Variable{:symbol ?lname}]}], :qlimit nil, :qoffset nil, :qreturnmaps #datalog.parser.type.ReturnMaps{:mapping-type :strs, :mapping-keys (#datalog.parser.type.MappingKey{:mapping-key foo})}}
+    '#datalog.parser.type.Query
+     {:qfind #datalog.parser.type.FindRel {:elements [#datalog.parser.type.Variable
+                                                       {:symbol ?e}]},
+      :qin [#datalog.parser.type.BindScalar {:variable #datalog.parser.type.SrcVar
+                                                        {:symbol $}}
+            #datalog.parser.type.BindScalar {:variable #datalog.parser.type.Variable
+                                                        {:symbol ?fname}}
+            #datalog.parser.type.BindScalar {:variable #datalog.parser.type.Variable
+                                                        {:symbol ?lname}}],
+      :qlimit nil,
+      :qoffset nil,
+      :qreturnmaps #datalog.parser.type.ReturnMaps
+                    {:mapping-keys (#datalog.parser.type.MappingKey {:mapping-key
+                                                                       foo}),
+                     :mapping-type :strs},
+      :qwhere [#datalog.parser.type.Pattern
+                {:pattern [#datalog.parser.type.Variable {:symbol ?e}
+                           #datalog.parser.type.Constant {:value :user/firstName}
+                           #datalog.parser.type.Variable {:symbol ?fname}],
+                 :source #datalog.parser.type.DefaultSrc {}}
+               #datalog.parser.type.Pattern
+                {:pattern [#datalog.parser.type.Variable {:symbol ?e}
+                           #datalog.parser.type.Constant {:value :user/lastName}
+                           #datalog.parser.type.Variable {:symbol ?lname}],
+                 :source #datalog.parser.type.DefaultSrc {}}],
+      :qwith nil}
 
     '[:find ?e
       :in $ ?fname ?lname
       :syms foo
       :where [?e :user/firstName ?fname]
       [?e :user/lastName ?lname]]
-    '#datalog.parser.type.Query{:qfind #datalog.parser.type.FindRel{:elements [#datalog.parser.type.Variable{:symbol ?e}]}, :qwith nil, :qin [#datalog.parser.type.BindScalar{:variable #datalog.parser.type.SrcVar{:symbol $}} #datalog.parser.type.BindScalar{:variable #datalog.parser.type.Variable{:symbol ?fname}} #datalog.parser.type.BindScalar{:variable #datalog.parser.type.Variable{:symbol ?lname}}], :qwhere [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{}, :pattern [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Constant{:value :user/firstName} #datalog.parser.type.Variable{:symbol ?fname}]} #datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{}, :pattern [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Constant{:value :user/lastName} #datalog.parser.type.Variable{:symbol ?lname}]}], :qlimit nil, :qoffset nil, :qreturnmaps #datalog.parser.type.ReturnMaps{:mapping-type :syms, :mapping-keys (#datalog.parser.type.MappingKey{:mapping-key foo})}}
+    '#datalog.parser.type.Query
+     {:qfind #datalog.parser.type.FindRel {:elements [#datalog.parser.type.Variable
+                                                       {:symbol ?e}]},
+      :qin [#datalog.parser.type.BindScalar {:variable #datalog.parser.type.SrcVar
+                                                        {:symbol $}}
+            #datalog.parser.type.BindScalar {:variable #datalog.parser.type.Variable
+                                                        {:symbol ?fname}}
+            #datalog.parser.type.BindScalar {:variable #datalog.parser.type.Variable
+                                                        {:symbol ?lname}}],
+      :qlimit nil,
+      :qoffset nil,
+      :qreturnmaps #datalog.parser.type.ReturnMaps
+                    {:mapping-keys (#datalog.parser.type.MappingKey {:mapping-key
+                                                                       foo}),
+                     :mapping-type :syms},
+      :qwhere [#datalog.parser.type.Pattern
+                {:pattern [#datalog.parser.type.Variable {:symbol ?e}
+                           #datalog.parser.type.Constant {:value :user/firstName}
+                           #datalog.parser.type.Variable {:symbol ?fname}],
+                 :source #datalog.parser.type.DefaultSrc {}}
+               #datalog.parser.type.Pattern
+                {:pattern [#datalog.parser.type.Variable {:symbol ?e}
+                           #datalog.parser.type.Constant {:value :user/lastName}
+                           #datalog.parser.type.Variable {:symbol ?lname}],
+                 :source #datalog.parser.type.DefaultSrc {}}],
+      :qwith nil}
 
     '{:find [?e]
       :in [$ ?fname ?lname]
       :keys [foo]
       :where [[?e :user/firstName ?fname]
               [?e :user/lastName ?lname]]}
-    '#datalog.parser.type.Query{:qfind #datalog.parser.type.FindRel{:elements [#datalog.parser.type.Variable{:symbol ?e}]}, :qwith nil, :qin [#datalog.parser.type.BindScalar{:variable #datalog.parser.type.SrcVar{:symbol $}} #datalog.parser.type.BindScalar{:variable #datalog.parser.type.Variable{:symbol ?fname}} #datalog.parser.type.BindScalar{:variable #datalog.parser.type.Variable{:symbol ?lname}}], :qwhere [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{}, :pattern [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Constant{:value :user/firstName} #datalog.parser.type.Variable{:symbol ?fname}]} #datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{}, :pattern [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Constant{:value :user/lastName} #datalog.parser.type.Variable{:symbol ?lname}]}], :qlimit nil, :qoffset nil, :qreturnmaps #datalog.parser.type.ReturnMaps{:mapping-type :keys, :mapping-keys (#datalog.parser.type.MappingKey{:mapping-key foo})}}
+    '#datalog.parser.type.Query
+     {:qfind #datalog.parser.type.FindRel {:elements [#datalog.parser.type.Variable
+                                                       {:symbol ?e}]},
+      :qin [#datalog.parser.type.BindScalar {:variable #datalog.parser.type.SrcVar
+                                                        {:symbol $}}
+            #datalog.parser.type.BindScalar {:variable #datalog.parser.type.Variable
+                                                        {:symbol ?fname}}
+            #datalog.parser.type.BindScalar {:variable #datalog.parser.type.Variable
+                                                        {:symbol ?lname}}],
+      :qlimit nil,
+      :qoffset nil,
+      :qreturnmaps #datalog.parser.type.ReturnMaps
+                    {:mapping-keys (#datalog.parser.type.MappingKey {:mapping-key
+                                                                       foo}),
+                     :mapping-type :keys},
+      :qwhere [#datalog.parser.type.Pattern
+                {:pattern [#datalog.parser.type.Variable {:symbol ?e}
+                           #datalog.parser.type.Constant {:value :user/firstName}
+                           #datalog.parser.type.Variable {:symbol ?fname}],
+                 :source #datalog.parser.type.DefaultSrc {}}
+               #datalog.parser.type.Pattern
+                {:pattern [#datalog.parser.type.Variable {:symbol ?e}
+                           #datalog.parser.type.Constant {:value :user/lastName}
+                           #datalog.parser.type.Variable {:symbol ?lname}],
+                 :source #datalog.parser.type.DefaultSrc {}}],
+      :qwith nil}
 
     '{:find [[?e ?fname]]
       :keys [foo]
       :in [$ ?fname ?lname]
       :where [[?e :user/firstName ?fname]
               [?e :user/lastName ?lname]]}
-    #datalog.parser.type.Query{:qfind #datalog.parser.type.FindTuple{:elements [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Variable{:symbol ?fname}]}, :qwith nil, :qin [#datalog.parser.type.BindScalar{:variable #datalog.parser.type.SrcVar{:symbol $}} #datalog.parser.type.BindScalar{:variable #datalog.parser.type.Variable{:symbol ?fname}} #datalog.parser.type.BindScalar{:variable #datalog.parser.type.Variable{:symbol ?lname}}], :qwhere [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{}, :pattern [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Constant{:value :user/firstName} #datalog.parser.type.Variable{:symbol ?fname}]} #datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{}, :pattern [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Constant{:value :user/lastName} #datalog.parser.type.Variable{:symbol ?lname}]}], :qlimit nil, :qoffset nil, :qreturnmaps #datalog.parser.type.ReturnMaps{:mapping-type :keys, :mapping-keys (#datalog.parser.type.MappingKey{:mapping-key foo})}}
+    '#datalog.parser.type.Query
+     {:qfind #datalog.parser.type.FindTuple
+              {:elements [#datalog.parser.type.Variable {:symbol ?e}
+                          #datalog.parser.type.Variable {:symbol ?fname}]},
+      :qin [#datalog.parser.type.BindScalar {:variable #datalog.parser.type.SrcVar
+                                                        {:symbol $}}
+            #datalog.parser.type.BindScalar {:variable #datalog.parser.type.Variable
+                                                        {:symbol ?fname}}
+            #datalog.parser.type.BindScalar {:variable #datalog.parser.type.Variable
+                                                        {:symbol ?lname}}],
+      :qlimit nil,
+      :qoffset nil,
+      :qreturnmaps #datalog.parser.type.ReturnMaps
+                    {:mapping-keys (#datalog.parser.type.MappingKey {:mapping-key
+                                                                       foo}),
+                     :mapping-type :keys},
+      :qwhere [#datalog.parser.type.Pattern
+                {:pattern [#datalog.parser.type.Variable {:symbol ?e}
+                           #datalog.parser.type.Constant {:value :user/firstName}
+                           #datalog.parser.type.Variable {:symbol ?fname}],
+                 :source #datalog.parser.type.DefaultSrc {}}
+               #datalog.parser.type.Pattern
+                {:pattern [#datalog.parser.type.Variable {:symbol ?e}
+                           #datalog.parser.type.Constant {:value :user/lastName}
+                           #datalog.parser.type.Variable {:symbol ?lname}],
+                 :source #datalog.parser.type.DefaultSrc {}}],
+      :qwith nil}
 
     '{:find [?e]
       :where [[?e :user/age 30]]}
@@ -50,8 +176,8 @@
                                 :qreturnmaps nil,
                                 :qwhere [#datalog.parser.type.Pattern
                                           {:source #datalog.parser.type.DefaultSrc {}
-                                           :pattern [#datalog.parser.type.Variable {:symbol ?e} 
-                                                     #datalog.parser.type.Constant {:value :user/age} 
+                                           :pattern [#datalog.parser.type.Variable {:symbol ?e}
+                                                     #datalog.parser.type.Constant {:value :user/age}
                                                      #datalog.parser.type.Constant {:value 30}]}]
                                 :qwith nil}
 
@@ -84,12 +210,37 @@
                                 :qoffset nil,
                                 :qreturnmaps nil})
 
-  (is (= '#datalog.parser.type.Query{:qfind #datalog.parser.type.FindRel{:elements [#datalog.parser.type.Variable{:symbol ?e}]}, :qwith nil, :qin [#datalog.parser.type.BindScalar{:variable #datalog.parser.type.SrcVar{:symbol $}} #datalog.parser.type.BindScalar{:variable #datalog.parser.type.Variable{:symbol ?fname}} #datalog.parser.type.BindScalar{:variable #datalog.parser.type.Variable{:symbol ?lname}}], :qwhere [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{}, :pattern [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Constant{:value :user/firstName} #datalog.parser.type.Variable{:symbol ?fname}]} #datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{}, :pattern [#datalog.parser.type.Variable{:symbol ?e} #datalog.parser.type.Constant{:value :user/lastName} #datalog.parser.type.Variable{:symbol ?lname}]}], :qlimit nil, :qoffset nil, :qreturnmaps #datalog.parser.type.ReturnMaps{:mapping-type :keys, :mapping-keys (#datalog.parser.type.MappingKey{:mapping-key :foo})}}
-         (parser/parse '[:find ?e
+  (is (= (parser/parse '[:find ?e
                          :in $ ?fname ?lname
                          :keys :foo
                          :where [?e :user/firstName ?fname]
-                         [?e :user/lastName ?lname]]))))
+                         [?e :user/lastName ?lname]])
+         '#datalog.parser.type.Query
+          {:qfind #datalog.parser.type.FindRel {:elements [#datalog.parser.type.Variable
+                                                            {:symbol ?e}]},
+           :qin [#datalog.parser.type.BindScalar {:variable #datalog.parser.type.SrcVar
+                                                             {:symbol $}}
+                 #datalog.parser.type.BindScalar {:variable #datalog.parser.type.Variable
+                                                             {:symbol ?fname}}
+                 #datalog.parser.type.BindScalar {:variable #datalog.parser.type.Variable
+                                                             {:symbol ?lname}}],
+           :qlimit nil,
+           :qoffset nil,
+           :qreturnmaps #datalog.parser.type.ReturnMaps
+                         {:mapping-keys (#datalog.parser.type.MappingKey {:mapping-key
+                                                                            :foo}),
+                          :mapping-type :keys},
+           :qwhere [#datalog.parser.type.Pattern
+                     {:pattern [#datalog.parser.type.Variable {:symbol ?e}
+                                #datalog.parser.type.Constant {:value :user/firstName}
+                                #datalog.parser.type.Variable {:symbol ?fname}],
+                      :source #datalog.parser.type.DefaultSrc {}}
+                    #datalog.parser.type.Pattern
+                     {:pattern [#datalog.parser.type.Variable {:symbol ?e}
+                                #datalog.parser.type.Constant {:value :user/lastName}
+                                #datalog.parser.type.Variable {:symbol ?lname}],
+                      :source #datalog.parser.type.DefaultSrc {}}],
+           :qwith nil})))
 
 (deftest validation-fails
   (are [q msg] (thrown-with-msg? ExceptionInfo msg (parser/parse q))
