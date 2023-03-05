@@ -1,17 +1,15 @@
 (ns datalog.parser.impl 
   (:require [clojure.set               :as set]
-            [datalog.parser.type       :as t]
-          ;  [datalog.parser.util                :refer [postwalk]]
+            [datalog.parser.type       :as t #?@(:cljs [:refer [Not And Or Aggregate SrcVar RulesVar RuleExpr
+                                                                RuleVars Variable ReturnMaps MappingKey]])]
             [datalog.parser.impl.proto :as p]
             [datalog.parser.impl.util :as util
-             #?(:cljs :refer-macros :clj :refer) [raise forv]]
-            #?(:cljs [datalog.parser.type :refer
-                      [Not And Or Aggregate SrcVar RulesVar RuleExpr
-                       RuleVars Variable ReturnMaps MappingKey]]))
+             #?(:cljs :refer-macros :clj :refer) [raise forv]])
   (:refer-clojure :rename  {distinct? core-distinct?})
   #?(:clj
      (:import [datalog.parser.type
-               Not And Or Aggregate SrcVar RulesVar RuleExpr RuleVars Variable ReturnMaps MappingKey])))
+               Not And Or Aggregate SrcVar RulesVar RuleExpr 
+               RuleVars Variable ReturnMaps MappingKey])))
 
 #?(:clj (set! *warn-on-reflection* true))
 
