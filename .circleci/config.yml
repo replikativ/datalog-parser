@@ -3,41 +3,24 @@ version: 2.1
 orbs:
   tools: replikativ/clj-tools@0
 
-jobs:
-  build:
-    executor: tools/clojurecli
-    steps:
-      - attach_workspace:
-          at: /home/circleci
-      - run:
-          name: Clean
-          command: clojure -T:build clean
-      - run:
-          name: Build
-          command: clojure -T:build jar
-          no_output_timeout: 5m
-      - persist_to_workspace:
-          root: /home/circleci/
-          paths:
-            - .m2
-            - .npm
-            - replikativ
-
 workflows:
   build_test_and_deploy:
     jobs:
       - tools/setup:
           context: dockerhub-deploy
-          setup_cljs: false
       - tools/unittest:
           context: dockerhub-deploy
           requires:
             - tools/setup
+      - tools/cljstest:
+         context: docker-deploy
+         requires:
+           - tools/build
       - tools/format:
           context: dockerhub-deploy
           requires:
             - tools/setup
-      - build:
+      - tools/build:
           context: dockerhub-deploy
           requires:
             - tools/setup
@@ -51,7 +34,7 @@ workflows:
           requires:
             - tools/unittest
             - tools/format
-            - build
+            - tools/build
       - tools/release:
           context:
             - dockerhub-deploy

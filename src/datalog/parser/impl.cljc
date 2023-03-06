@@ -1,17 +1,15 @@
-(ns datalog.parser.impl
+(ns datalog.parser.impl 
   (:require [clojure.set               :as set]
-            [datalog.parser.type       :as t]
-            [datalog.parser.util                :refer [postwalk]]
+            [datalog.parser.type       :as t #?@(:cljs [:refer [Not And Or Aggregate SrcVar RulesVar RuleExpr
+                                                                RuleVars Variable ReturnMaps MappingKey]])]
             [datalog.parser.impl.proto :as p]
             [datalog.parser.impl.util :as util
-              #?(:cljs :refer-macros :clj :refer) [raise forv]]
-            #?(:cljs [datalog.parser.type :refer
-                      [Not And Or Aggregate SrcVar RulesVar RuleExpr
-                       RuleVars Variable ReturnMaps MappingKey]]))
+             #?(:cljs :refer-macros :clj :refer) [raise forv]])
   (:refer-clojure :rename  {distinct? core-distinct?})
   #?(:clj
      (:import [datalog.parser.type
-               Not And Or Aggregate SrcVar RulesVar RuleExpr RuleVars Variable ReturnMaps MappingKey])))
+               Not And Or Aggregate SrcVar RulesVar RuleExpr 
+               RuleVars Variable ReturnMaps MappingKey])))
 
 #?(:clj (set! *warn-on-reflection* true))
 
@@ -431,18 +429,18 @@
   "Parse pagination limit"
   [limit]
   (when limit
-    (if (= (type (first limit)) java.lang.Long)
+    (if (integer? (first limit))
       (first limit)
-      (raise "Cannot parse :limit, expected java.lang.Long"
+      (raise "Cannot parse :limit, expected integer"
              {:error :parser/limit, :limit limit}))))
 
 (defn parse-offset
   "Parse pagination offset"
   [offset]
   (when offset
-    (if (= (type (first offset)) java.lang.Long)
+    (if (integer? (first offset))
       (first offset)
-      (raise "Cannot parse :offset, expected java.lang.Long"
+      (raise "Cannot parse :offset, expected integer"
              {:error :parser/offset, :offset offset}))))
 
 (defn parse-return-maps
@@ -515,7 +513,7 @@
           (recur (update parsed key (fnil conj []) q) key qs))
         parsed))))
 
-(defn assert-valid [q form {:keys [find] :as mform}]
+(defn assert-valid [q form {:keys [find] :as _mform}]
   (let [find-vars    (t/collect-vars #{} (:qfind  q))
         with-vars    (set                (:qwith  q))
         in-vars      (t/collect-vars #{} (:qin    q))
@@ -560,7 +558,7 @@
 
   (let [rule-exprs (collect-type RuleExpr (:qwhere q))
         rules-vars (collect-type RulesVar (:qin    q))]
-    (when (and (not (empty? rule-exprs))
+    (when (and (seq rule-exprs)
                (empty? rules-vars))
       (raise "Missing rules var '%' in :in"
              {:error :parser/query, :form form}))))

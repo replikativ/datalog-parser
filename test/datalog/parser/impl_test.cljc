@@ -2,9 +2,8 @@
   (:require #?(:cljs [cljs.test :refer-macros [is are deftest testing]]
                :clj  [clojure.test :refer     [is are deftest testing]])
             [datalog.parser.impl :as dp]
-            [datalog.parser.type :as t]
-            [datalog.parser.test.util])
-  (:import [clojure.lang ExceptionInfo]))
+            [datalog.parser.type :as t])
+  #?(:clj (:import [clojure.lang ExceptionInfo])))
 
 (deftest bindings
   (are [form res] (= (dp/parse-binding form) res)

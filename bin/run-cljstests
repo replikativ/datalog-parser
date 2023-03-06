@@ -1,0 +1,9 @@
+set -o errexit
+set -o pipefail
+
+echo "Running tests for node"
+[ -d "node_modules/ws" ] || npm install ws
+clojure -M:test unit-node
+
+#echo "Running tests for browser"
+#clojure -M:test unit-browser

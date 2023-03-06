@@ -55,7 +55,7 @@
 
 (defrecord PullPattern [specs]
   IPullSpecComponent
-  (-as-spec [this]
+  (-as-spec [_this]
     (let [init (PullSpec. false (transient {}))
           spec (reduce aggregate-specs init specs)]
       [:subpattern (update spec :attrs persistent!)])))

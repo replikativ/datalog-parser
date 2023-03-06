@@ -16,10 +16,15 @@
 (defprotocol IFindElements
   (find-elements [this]))
 
-(extend-type #?(:clj Object :cljs object)
-  Traversable
-  (-traversable? [_] false))
-
 (extend-type nil
   Traversable
   (-traversable? [_] false))
+
+#?(:clj (extend-protocol Traversable
+          Object (-traversable? [_] false))
+
+   :cljs (extend-protocol Traversable
+           boolean (-traversable? [_] false)
+           number  (-traversable? [_] false)
+           object  (-traversable? [_] false)
+           string  (-traversable? [_] false)))
