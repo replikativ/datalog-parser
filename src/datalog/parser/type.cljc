@@ -9,24 +9,23 @@
 
 (declare collect-vars)
 
-#?(:clj
-   (defmacro deftrecord
-     "Augment all parser records with default implementation of ITraversable"
-     [tagname fields & rest]
-     (let [[f pred acc]  (map gensym ["f" "pred" "acc"])
-           walked-fields (map #(list `util/postwalk % f) fields)]
-       `(defrecord ~tagname ~fields
-          p/Traversable
-          (~'-traversable? [_#] true)
-          p/ITraversable
-          (~'-postwalk [this# ~f]
-           (-> (new ~tagname ~@walked-fields)
-               (vary-meta merge (meta this#))))
-          (~'-collect [_# ~pred ~acc]
-           ~(reduce #(list `collect pred %2 %1) acc fields))
-          (~'-collect-vars [_# ~acc]
-           ~(reduce #(list `collect-vars %1 %2) acc fields))
-          ~@rest))))
+(defmacro deftrecord
+  "Augment all parser records with default implementation of ITraversable"
+  [tagname fields & rest]
+  (let [[f pred acc]  (map gensym ["f" "pred" "acc"])
+        walked-fields (map #(list `util/postwalk % f) fields)]
+    `(defrecord ~tagname ~fields
+       p/Traversable
+       (~'-traversable? [_#] true)
+       p/ITraversable
+       (~'-postwalk [this# ~f]
+         (-> (new ~tagname ~@walked-fields)
+             (vary-meta merge (meta this#))))
+       (~'-collect [_# ~pred ~acc]
+         ~(reduce #(list `collect pred %2 %1) acc fields))
+       (~'-collect-vars [_# ~acc]
+         ~(reduce #(list `collect-vars %1 %2) acc fields))
+       ~@rest)))
 
 ;; placeholder    = the symbol '_'
 ;; variable       = symbol starting with "?"
@@ -116,7 +115,8 @@
 (deftrecord RuleExpr  [source name args]) ;; TODO rule with constant or '_' as argument
 (deftrecord Not       [source vars clauses])
 (deftrecord Or        [source rule-vars clauses])
-(deftrecord And       [clauses])
+(deftrecord And       [clauses]) ;; sequential and
+(deftrecord AndP      [clauses]) ;; parallel and
 
 (def not? (partial instance? Not))
 (def or?  (partial instance? Or))
