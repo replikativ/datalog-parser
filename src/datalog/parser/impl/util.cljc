@@ -27,8 +27,8 @@
   (str/starts-with? v "_"))
 
 (defn reverse-ref?
-  #?@(:clj  [^Boolean [attr]] 
-      :cljs [^boolean [attr]]) 
+  #?@(:clj  [^Boolean [attr]]
+      :cljs [^boolean [attr]])
   (-> attr decompose-ref second reverse-attr?))
 
 (defn- invert-name [s]

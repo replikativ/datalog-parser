@@ -38,7 +38,7 @@
                      (t/->BindScalar (t/->Variable '?c))])))
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse binding"
-        (dp/parse-binding :key))))
+                        (dp/parse-binding :key))))
 
 (deftest in
   (are [form res] (= (dp/parse-in form) res)
@@ -60,14 +60,14 @@
                        (t/->BindScalar (t/->Variable '?x)))]))])
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse binding"
-        (dp/parse-in ['?x :key]))))
+                        (dp/parse-in ['?x :key]))))
 
 (deftest with
   (is (= (dp/parse-with '[?x ?y])
          [(t/->Variable '?x) (t/->Variable '?y)]))
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse :with clause"
-        (dp/parse-with '[?x _]))))
+                        (dp/parse-with '[?x _]))))
 
 (deftest test-parse-find
   (is (= (dp/parse-find '[?a ?b])
@@ -149,16 +149,16 @@
          [(t/->Pattern (t/->DefaultSrc) [(t/->Placeholder)])])])})
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse rule-vars"
-        (dp/parse-rules '[[(rule) [_]]])))
+                        (dp/parse-rules '[[(rule) [_]]])))
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse rule-vars"
-        (dp/parse-rules '[[(rule []) [_]]])))
+                        (dp/parse-rules '[[(rule []) [_]]])))
 
   (is (thrown-with-msg? ExceptionInfo #"Rule variables should be distinct"
-        (dp/parse-rules '[[(rule ?x ?y ?x) [_]]])))
+                        (dp/parse-rules '[[(rule ?x ?y ?x) [_]]])))
 
   (is (thrown-with-msg? ExceptionInfo #"Rule variables should be distinct"
-        (dp/parse-rules '[[(rule [?x ?y] ?z ?x) [_]]]))))
+                        (dp/parse-rules '[[(rule [?x ?y] ?z ?x) [_]]]))))
 
 (deftest branches
   (are [form res] (= (set (dp/parse-rules form)) res)
@@ -195,15 +195,15 @@
          [(t/->Pattern (t/->DefaultSrc) [(t/->Constant :c)])])])})
 
   (is (thrown-with-msg? ExceptionInfo #"Rule branch should have clauses"
-        (dp/parse-rules '[[(rule ?x)]])))
+                        (dp/parse-rules '[[(rule ?x)]])))
 
   (is (thrown-with-msg? ExceptionInfo #"Arity mismatch"
-        (dp/parse-rules '[[(rule ?x) [_]]
-                          [(rule ?x ?y) [_]]])))
+                        (dp/parse-rules '[[(rule ?x) [_]]
+                                          [(rule ?x ?y) [_]]])))
 
   (is (thrown-with-msg? ExceptionInfo #"Arity mismatch"
-        (dp/parse-rules '[[(rule ?x) [_]]
-                          [(rule [?x]) [_]]]))))
+                        (dp/parse-rules '[[(rule ?x) [_]]
+                                          [(rule [?x]) [_]]]))))
 
 (deftest pattern
   (are [clause pattern] (= (dp/parse-clause clause) pattern)
@@ -226,7 +226,7 @@
     (t/->Pattern (t/->SrcVar '$x) [(t/->Placeholder) (t/->Constant '$src-sym) (t/->Variable '?v)]))
 
   (is (thrown-with-msg? ExceptionInfo #"Pattern could not be empty"
-        (dp/parse-clause '[]))))
+                        (dp/parse-clause '[]))))
 
 (deftest test-pred
   (are [clause res] (= (dp/parse-clause clause) res)
@@ -268,7 +268,7 @@
     (t/->RuleExpr (t/->DefaultSrc) (t/->PlainSymbol 'friends) [(t/->Constant 'something)]))
 
   (is (thrown-with-msg? ExceptionInfo #"rule-expr requires at least one argument"
-        (dp/parse-clause '(friends)))))
+                        (dp/parse-clause '(friends)))))
 
 (deftest not-clause
   (are [clause res] (= (dp/parse-clause clause) res)
@@ -321,24 +321,24 @@
        [(t/->Variable '?e) (t/->Constant :follows) (t/->Variable '?x)])]))
 
   (is (thrown-with-msg? ExceptionInfo #"Join variable not declared inside clauses: \[\?x\]"
-        (dp/parse-clause '(not-join [?x] [?y]))))
+                        (dp/parse-clause '(not-join [?x] [?y]))))
 
   (is (thrown-with-msg? ExceptionInfo #"Join variables should not be empty"
-        (dp/parse-clause '(not-join [] [?y]))))
+                        (dp/parse-clause '(not-join [] [?y]))))
 
   (is (thrown-with-msg? ExceptionInfo #"Join variables should not be empty"
-        (dp/parse-clause '(not [_]))))
+                        (dp/parse-clause '(not [_]))))
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse 'not-join' clause"
-        (dp/parse-clause '(not-join [?x]))))
+                        (dp/parse-clause '(not-join [?x]))))
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse 'not' clause"
-        (dp/parse-clause '(not))))
+                        (dp/parse-clause '(not))))
 
   (is (thrown-with-msg? ExceptionInfo #"Join variable not declared inside clauses: \[\?y\]"
-        (dp/parse-clause '(not-join [?y]
-                                    (not-join [?x]
-                                              [?x :follows ?y]))))))
+                        (dp/parse-clause '(not-join [?y]
+                                                    (not-join [?x]
+                                                              [?x :follows ?y]))))))
 
 (deftest or-clause
   (are [clause res] (= (dp/parse-clause clause) res)
@@ -454,27 +454,25 @@
                                                                                                              :free [#datalog.parser.type.Variable{:symbol ?x}]},
                                                                     :clauses [#datalog.parser.type.Pattern{:source #datalog.parser.type.DefaultSrc{},
                                                                                                            :pattern [#datalog.parser.type.Variable{:symbol ?x}
-                                                                                                                                                  #datalog.parser.type.Constant{:value :follows} #datalog.parser.type.Variable{:symbol ?y}]}]}]}))
-
-
-  (is (thrown-with-msg? ExceptionInfo #"Join variable not declared inside clauses: \[\?y\]"
-        (dp/parse-clause '(or [?x] [?x ?y]))))
+                                                                                                                     #datalog.parser.type.Constant{:value :follows} #datalog.parser.type.Variable{:symbol ?y}]}]}]}))
 
   (is (thrown-with-msg? ExceptionInfo #"Join variable not declared inside clauses: \[\?y\]"
-        (dp/parse-clause '(or [?x] [?y]))))
+                        (dp/parse-clause '(or [?x] [?x ?y]))))
+
+  (is (thrown-with-msg? ExceptionInfo #"Join variable not declared inside clauses: \[\?y\]"
+                        (dp/parse-clause '(or [?x] [?y]))))
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse rule-vars"
-        (dp/parse-clause '(or-join [] [?y]))))
+                        (dp/parse-clause '(or-join [] [?y]))))
 
   (is (thrown-with-msg? ExceptionInfo #"Join variables should not be empty"
-        (dp/parse-clause '(or [_]))))
+                        (dp/parse-clause '(or [_]))))
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse 'or-join' clause"
-        (dp/parse-clause '(or-join [?x]))))
+                        (dp/parse-clause '(or-join [?x]))))
 
   (is (thrown-with-msg? ExceptionInfo #"Cannot parse 'or' clause"
-        (dp/parse-clause '(or)))))
-
+                        (dp/parse-clause '(or)))))
 
 (deftest test-query->map
   (testing "correct parsing"
@@ -513,11 +511,10 @@
                              :in d e f
                              :and more])))))
 
-
 (deftest test-parse-return-maps
   (testing "failed parsing"
     (is (thrown-with-msg? ExceptionInfo #"Only one of these three options is allowed: :keys :strs :syms"
-          (dp/parse-return-maps {:keys '("keys" "strs" "syms") :syms '("keys" "strs" "syms")}))))
+                          (dp/parse-return-maps {:keys '("keys" "strs" "syms") :syms '("keys" "strs" "syms")}))))
   (testing "parsing correct options"
     (is (= #datalog.parser.type.ReturnMaps{:mapping-type :keys, :mapping-keys (#datalog.parser.type.MappingKey{:mapping-key "keys"} #datalog.parser.type.MappingKey{:mapping-key "strs"} #datalog.parser.type.MappingKey{:mapping-key "syms"})}
            (dp/parse-return-maps {:keys '("keys" "strs" "syms")})))

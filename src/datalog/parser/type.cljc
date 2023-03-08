@@ -20,12 +20,12 @@
           (~'-traversable? [_#] true)
           p/ITraversable
           (~'-postwalk [this# ~f]
-           (-> (new ~tagname ~@walked-fields)
-               (vary-meta merge (meta this#))))
+            (-> (new ~tagname ~@walked-fields)
+                (vary-meta merge (meta this#))))
           (~'-collect [_# ~pred ~acc]
-           ~(reduce #(list `collect pred %2 %1) acc fields))
+            ~(reduce #(list `collect pred %2 %1) acc fields))
           (~'-collect-vars [_# ~acc]
-           ~(reduce #(list `collect-vars %1 %2) acc fields))
+            ~(reduce #(list `collect-vars %1 %2) acc fields))
           ~@rest))))
 
 ;; placeholder    = the symbol '_'
