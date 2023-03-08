@@ -1,4 +1,4 @@
-(ns datalog.parser.impl 
+(ns datalog.parser.impl
   (:require [clojure.set               :as set]
             [datalog.parser.type       :as t #?@(:cljs [:refer [Not And Or Aggregate SrcVar RulesVar RuleExpr
                                                                 RuleVars Variable ReturnMaps MappingKey]])]
@@ -8,7 +8,7 @@
   (:refer-clojure :rename  {distinct? core-distinct?})
   #?(:clj
      (:import [datalog.parser.type
-               Not And Or Aggregate SrcVar RulesVar RuleExpr 
+               Not And Or Aggregate SrcVar RulesVar RuleExpr
                RuleVars Variable ReturnMaps MappingKey])))
 
 #?(:clj (set! *warn-on-reflection* true))
@@ -496,11 +496,11 @@
   (let [name->branch (group-by :name (parse-seq parse-rule form))]
     (forv [[name branches] name->branch
            :let [branches (forv [b branches]
-                            (datalog.parser.type.RuleBranch.
-                             (:vars b) (:clauses b)))]]
-      (do
-        (validate-arity name branches)
-        (datalog.parser.type.Rule. name branches)))))
+                                (datalog.parser.type.RuleBranch.
+                                 (:vars b) (:clauses b)))]]
+          (do
+            (validate-arity name branches)
+            (datalog.parser.type.Rule. name branches)))))
 
 (defn query->map [query]
   (let [allowed-keys #{:find :with :in :where :limit :offset :keys :syms :strs}]

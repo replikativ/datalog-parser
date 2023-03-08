@@ -160,16 +160,16 @@
 
 (defn- expand-map-clause [clause]
   (forv [[k v] clause]
-    {k v}))
+        {k v}))
 
 (let [wildcarded? (comp not-empty :wildcard)]
   (defn- simplify-pattern-clauses [pattern]
     (let [groups (group-by pattern-clause-type pattern)
           base   (cond-> [] (wildcarded? groups) (conj '*))]
       (into base
-        (concat
-         (:other groups)
-         (mapcat expand-map-clause (:map groups)))))))
+            (concat
+             (:other groups)
+             (mapcat expand-map-clause (:map groups)))))))
 
 (defn parse-pattern
   "Parse an EDN pull pattern into a tree of records using the following

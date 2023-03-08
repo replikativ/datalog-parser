@@ -32,12 +32,12 @@
            (dpp/parse-pull '[{:foo [*]}]))))
   (testing "subpattern"
     (is (= (dpp/->PullSpec
-             false
-             {:foo {:attr :foo
-                    :subpattern (dpp/->PullSpec
-                                  false
-                                  {:bar {:attr :bar}
-                                   :me {:attr :me}})}})
+            false
+            {:foo {:attr :foo
+                   :subpattern (dpp/->PullSpec
+                                false
+                                {:bar {:attr :bar}
+                                 :me {:attr :me}})}})
            (dpp/parse-pull '[{:foo [:bar :me]}]))))
   (testing "recursion"
     (is (= (dpp/->PullSpec false {:foo {:attr :foo :recursion nil}})
@@ -49,8 +49,8 @@
     (is (= (dpp/->PullSpec false {:foo {:attr :foo :default "bar" :subpattern wildcard}})
            (dpp/parse-pull '[{(:foo :default "bar") [*]}]))))
   (testing "as"
-      (is (= (dpp/->PullSpec false {:foo {:attr :foo :as "bar" :subpattern wildcard}})
-             (dpp/parse-pull '[{(:foo :as "bar") [*]}])))))
+    (is (= (dpp/->PullSpec false {:foo {:attr :foo :as "bar" :subpattern wildcard}})
+           (dpp/parse-pull '[{(:foo :as "bar") [*]}])))))
 
 (deftest legacy-parse-pattern-test
   (testing "limit"

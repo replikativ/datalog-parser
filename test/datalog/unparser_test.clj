@@ -12,8 +12,6 @@
     (testing "Datahike query unparsing."
       (is (= q (unparse (parse q)))))))
 
-
-
 (comment ;; TODO
   (let [q '[:find ?foo ?baz
             :in $before $after

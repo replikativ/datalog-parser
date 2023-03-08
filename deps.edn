@@ -7,12 +7,14 @@
                                lambdaisland/kaocha {:mvn/version "1.71.1119"}
                                lambdaisland/kaocha-cljs {:mvn/version "1.4.130"}}
                   :extra-paths ["perf" "test"]}
-           :build {:deps {io.github.seancorfield/build-clj {:git/tag "v0.8.2"
-                                                            :git/sha "0ffdb4c"}
-                          borkdude/gh-release-artifact {:git/url "https://github.com/borkdude/gh-release-artifact"
-                                                        :sha "a83ee8da47d56a80b6380cbb6b4b9274048067bd"}
-                          babashka/babashka.curl {:mvn/version "0.1.1"}
-                          babashka/fs {:mvn/version "0.1.2"}
-                          cheshire/cheshire {:mvn/version "5.10.2"}}
-                   :ns-default build}}
- :paths ["src"]}
+           :format {:extra-deps {cljfmt/cljfmt {:mvn/version "0.7.0"}}
+                    :main-opts ["-m" "cljfmt.main" "check"]}
+           :ffix   {:extra-deps {cljfmt/cljfmt {:mvn/version "0.8.0"}}
+                    :main-opts ["-m" "cljfmt.main" "fix"]}
+           :build  {:deps {io.github.clojure/tools.build          {:mvn/version "0.9.3"}
+                           slipset/deps-deploy                    {:mvn/version "0.2.0"}
+                           io.github.borkdude/gh-release-artifact {:git/sha "05f8d8659e6805d513c59447ff41dc8497878462"}
+                           babashka/babashka.curl                 {:mvn/version "0.1.2"}
+                           babashka/fs                            {:mvn/version "0.1.6"}
+                           cheshire/cheshire                      {:mvn/version "5.10.2"}}
+                    :ns-default build}}}

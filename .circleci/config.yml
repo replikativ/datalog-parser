@@ -33,6 +33,7 @@ workflows:
               only: main
           requires:
             - tools/unittest
+            - tools/cljstest
             - tools/format
             - tools/build
       - tools/release:

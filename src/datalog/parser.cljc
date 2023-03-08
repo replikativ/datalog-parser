@@ -19,6 +19,6 @@
                            :qlimit      (-> qm :limit impl/parse-limit)
                            :qoffset     (-> qm :offset impl/parse-offset)
                            :qreturnmaps (-> qm (select-keys [:keys :syms :strs])
-                                               (impl/parse-return-maps))})]
+                                            (impl/parse-return-maps))})]
     (impl/assert-valid res q qm)
     res))

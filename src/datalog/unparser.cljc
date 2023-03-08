@@ -1,17 +1,17 @@
 (ns datalog.unparser
   (:require [datalog.parser :as parser]
             #?(:cljs
-              [datalog.parser.type :refer
-               [Aggregate And BindColl BindIgnore BindScalar BindTuple Constant
+               [datalog.parser.type :refer
+                [Aggregate And BindColl BindIgnore BindScalar BindTuple Constant
+                 DefaultSrc FindColl FindRel FindScalar FindTuple Function Not Or
+                 Pattern Placeholder PlainSymbol Predicate Pull Query Rule
+                 RuleBranch RuleExpr RulesVar RuleVars SrcVar Variable]]))
+  #?(:clj
+     (:import  [datalog.parser.type
+                Aggregate And BindColl BindIgnore BindScalar BindTuple Constant
                 DefaultSrc FindColl FindRel FindScalar FindTuple Function Not Or
                 Pattern Placeholder PlainSymbol Predicate Pull Query Rule
-                RuleBranch RuleExpr RulesVar RuleVars SrcVar Variable]]))
-  #?(:clj
-    (:import  [datalog.parser.type
-               Aggregate And BindColl BindIgnore BindScalar BindTuple Constant
-               DefaultSrc FindColl FindRel FindScalar FindTuple Function Not Or
-               Pattern Placeholder PlainSymbol Predicate Pull Query Rule
-               RuleBranch RuleExpr RulesVar RuleVars SrcVar Variable])))
+                RuleBranch RuleExpr RulesVar RuleVars SrcVar Variable])))
 
 #?(:clj (set! *warn-on-reflection* true))
 
@@ -24,7 +24,6 @@
   [v]
   (-unparse v))
 
-
 ;; ===== Missing Pull records
 
 ;; PullSpec
@@ -36,7 +35,6 @@
 ;; PullRecursionLimit
 ;; PullMapSpecEntry
 ;; PullAttrWithOpts
-
 
 (extend-protocol PUnparse
   Aggregate
