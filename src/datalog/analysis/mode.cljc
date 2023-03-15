@@ -20,7 +20,7 @@
     :keys-default ds/req
     :spec {:form (partial satisfies? p/ITraversable)
            :vars (vec-of symbol?)
-           :modes (set-of (set-of :symbol))}}))
+           :modes (set-of (set-of :symbol))}})) ;; TODO: probably set of symbols is enough
 
 ;; well modable
 
@@ -35,18 +35,23 @@
           #{(first modes)}
           (rest modes)))
 
-
 (defn translate-modes
-  "Returns valid translations of a mode set.
+  "Returns translations of a mode set.
+   Throws if a mode set is invalid in this context.
    An empty mode set indicates an unsatisfiable clause in the current context."
-  [new-vars {:keys [modes vars] :as _moded-clause}]
+  [new-vars {:keys [modes vars] :as moded-clause}]
   (let [index-translation (->> vars
                                (map-indexed (fn [idx old-var] [idx (.indexOf new-vars old-var)]))
-                               (apply hash-map))]
-    (->> modes
-         (map #(replace index-translation %))
-         (remove #(contains? % -1))
-         set)))
+                               (apply hash-map)) 
+        new-modes (map #(replace index-translation %) modes)
+        {valid false
+         invalid true} (group-by #(contains? % -1) new-modes)]
+  (when (seq invalid)
+    (util/raise "Invalid modes in this context: " invalid
+                {:clause moded-clause
+                 :new-vars new-vars
+                 :new-modes new-modes}))
+    (set valid)))
 
 (defn join-domains
   "Join mode domains of different clauses"
@@ -170,7 +175,7 @@
     {:form orig
      :vars vars
      :modes (set (map (comp first :modes) alts))
-     :alts alts}))
+     :alts alts})) ;; TODO: probably no alts needed as every alt needs to be  applicable
 
 (declare infere-and-context-modes infere-or-context-modes)
 
@@ -183,7 +188,7 @@
     (instance? t/Not clause)           (infere-and-context-modes clause (:vars clause) rule-modes (:clauses clause))))
 
 
-(defn infere-or-context-modes
+(defn infere-or-context-modes ;; TODO: change to apply + operation instead of min as all brnaches need to be able to run
   "Find modes of all clauses and infere min modes of branches"
   [orig bindable-vars rule-modes moded-clauses]
   (->> moded-clauses
