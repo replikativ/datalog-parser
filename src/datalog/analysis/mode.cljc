@@ -39,19 +39,21 @@
   "Returns translations of a mode set.
    Throws if a mode set is invalid in this context.
    An empty mode set indicates an unsatisfiable clause in the current context."
-  [new-vars {:keys [modes vars] :as moded-clause}]
+  [new-vars {:keys [form modes vars] :as _moded-clause}]
   (let [index-translation (->> vars
                                (map-indexed (fn [idx old-var] [idx (.indexOf new-vars old-var)]))
-                               (apply hash-map)) 
-        new-modes (map #(replace index-translation %) modes)
+                               (apply hash-map))
+        new-modes (map #(replace index-translation %) modes) ;; TODO: probably only 1 mode, valid or invalid
         {valid false
          invalid true} (group-by #(contains? % -1) new-modes)]
-  (when (seq invalid)
-    (util/raise "Invalid modes in this context: " invalid
-                {:clause moded-clause
-                 :new-vars new-vars
-                 :new-modes new-modes}))
-    (set valid)))
+    (when (seq invalid)
+      (util/raise "Invalid modes in this context: " invalid
+                  {:form form
+                   :new-vars new-vars
+                   :new-modes new-modes}))
+    {:form form
+     :vars new-vars
+     :modes (set valid)}))
 
 (defn join-domains
   "Join mode domains of different clauses"
@@ -60,46 +62,42 @@
    (let [all-vars (->> moded-clauses (map :vars) set)
          new-vars (vec (if bindable-vars
                          (set/intersection all-vars bindable-vars)
-                         all-vars))
-         new-modes (map (partial translate-modes new-vars)
-                        moded-clauses)]
-     {:vars new-vars
-      :mode-sets new-modes})))
+                         all-vars))]
+     (map (partial translate-modes new-vars)
+          moded-clauses))))
 
 (defn merge-clauses
-  "Join parallel clauses"
+  "Join modes of clauses to require the same entrance conditions"
   [moded-clauses]
-  (let [{:keys [vars mode-sets]} (join-domains moded-clauses)]
-    {:form (t/->AndP (map :clause moded-clauses))
-     :vars vars
-     :modes (->> mode-sets
+  (let [new-clauses (join-domains moded-clauses)]
+    {:form (t/->AndP (map :form moded-clauses))
+     :vars (:vars (first new-clauses))
+     :modes (->> new-clauses
+                 (map :modes)
                  (reduce (fn [acc-modes new-modes]
-                           (mapcat (fn [modes1]
-                                     (map (fn [modes2] (set/union modes1 modes2))
-                                          new-modes))
-                                   acc-modes))
+                           (for [modes1 acc-modes
+                                 modes2 new-modes]
+                             (set/union modes1 modes2)))
                          [])
                  set
                  min-modes)}))
 
 (defn join-or-clauses
-  "Join alternative clauses"
+  "Join alternative clauses (same head predicate)"
   [orig bindable-vars moded-clauses]
-  (let [{:keys [vars mode-sets]} (join-domains bindable-vars moded-clauses)
-        valid (->> moded-clauses
-                   (map #(hash-map :modes %1 :clause %2) mode-sets)
-                   (filter #(seq (:modes %))))]
-    (when (empty? valid)
-      (util/raise "No valid alternatives in Or-branch for this environment"
-                  {:vars bindable-vars
-                   :clauses moded-clauses}))
+  (let [new-clauses (join-domains bindable-vars moded-clauses)]
     {:form orig
-     :vars vars
-     :modes (->> (map :modes valid)
-                 (apply concat)
+     :vars (:vars (first new-clauses))
+     :modes (->> new-clauses
+                 (map :modes)
+                 (reduce (fn [acc-modes new-modes]
+                           (for [modes1 acc-modes
+                                 modes2 new-modes]
+                             (set/union modes1 modes2)))
+                         [])
                  set
                  min-modes)
-     :alts (map :clause valid)}))
+     :alts new-clauses}))
 
 (defn remove-bound [obligations newly-bound]
   (->> obligations
@@ -188,7 +186,7 @@
     (instance? t/Not clause)           (infere-and-context-modes clause (:vars clause) rule-modes (:clauses clause))))
 
 
-(defn infere-or-context-modes ;; TODO: change to apply + operation instead of min as all brnaches need to be able to run
+(defn infere-or-context-modes
   "Find modes of all clauses and infere min modes of branches"
   [orig bindable-vars rule-modes moded-clauses]
   (->> moded-clauses
