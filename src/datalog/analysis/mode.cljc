@@ -173,7 +173,7 @@
     {:form orig
      :vars vars
      :modes (set (map (comp first :modes) alts))
-     :alts alts})) ;; TODO: probably no alts needed as every alt needs to be  applicable
+     :alts alts})) ;; TODO: probably no alts needed as every alt needs to be applicable
 
 (declare infere-and-context-modes infere-or-context-modes)
 

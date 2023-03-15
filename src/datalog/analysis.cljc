@@ -51,7 +51,7 @@
 ;; modes
 
 (defn well-modable
-  "Detemines moding options for clauses in a bottom.up fashion"
+  "Determines moding options for clauses in a bottom.up fashion"
   ([parsed-query] (well-modable parsed-query {}))
   ([{:keys [qwhere qin]} parsed-rules]
    (let [in-vars qin
