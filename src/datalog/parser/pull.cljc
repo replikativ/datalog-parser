@@ -1,7 +1,7 @@
 (ns datalog.parser.pull
   (:require [datalog.parser.impl.util :as util
              #?(:cljs :refer-macros :clj :refer) [raise forv]])
-  (:refer-clojure :rename {pos? core-pos?}))
+  (:refer-clojure :rename {pos? core-pos?} #?@(:cljs (:exclude (pos?)))))
 
 #?(:clj (set! *warn-on-reflection* true))
 

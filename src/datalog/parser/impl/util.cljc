@@ -1,6 +1,7 @@
 (ns ^:no-doc datalog.parser.impl.util
   (:require [datalog.parser.impl.proto :as proto]
             [clojure.string            :as str])
+  #?(:cljs (:require-macros [datalog.parser.impl.util :refer [raise]]))
   (:refer-clojure :exclude [seqable?]))
 
 #?(:clj (set! *warn-on-reflection* true))
