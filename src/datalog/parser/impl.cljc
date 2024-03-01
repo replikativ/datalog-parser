@@ -5,7 +5,7 @@
             [datalog.parser.impl.proto :as p]
             [datalog.parser.impl.util :as util
              #?(:cljs :refer-macros :clj :refer) [raise forv]])
-  (:refer-clojure :rename  {distinct? core-distinct?})
+  (:refer-clojure :rename  {distinct? core-distinct?} #?@(:cljs (:exclude (distinct?))))
   #?(:clj
      (:import [datalog.parser.type
                Not And Or Aggregate SrcVar RulesVar RuleExpr
