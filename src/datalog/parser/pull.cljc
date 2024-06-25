@@ -190,7 +190,8 @@ legacy-limit-expr   = [(\"limit\" | 'limit') attr-name (positive-number | nil)]
 legacy-default-expr = [(\"default\" | 'default') attr-name any-value]
 ```"
   [pattern]
-  (when (sequential? pattern)
+  (when (or (sequential? pattern)
+            (set? pattern))
     (->> pattern
          simplify-pattern-clauses
          (mapv parse-attr-spec)

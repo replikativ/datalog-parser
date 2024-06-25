@@ -12,6 +12,9 @@
   (testing "simple attribute"
     (is (= (dpp/->PullSpec false {:foo {:attr :foo}})
            (dpp/parse-pull '[:foo]))))
+  (testing "simple attribute in set"
+    (is (= (dpp/->PullSpec false {:foo {:attr :foo}})
+           (dpp/parse-pull '#{:foo}))))
   (testing "namespaced attribute"
     (is (= (dpp/->PullSpec false {:db/id   {:attr :db/id}
                                   :foo/bar {:attr :foo/bar}})
@@ -24,7 +27,9 @@
            (dpp/parse-pull '[(:foo :default "bar")]))))
   (testing "as"
     (is (= (dpp/->PullSpec false {:foo {:attr :foo :as "bar"}})
-           (dpp/parse-pull '[(:foo :as "bar")])))))
+           (dpp/parse-pull '[(:foo :as "bar")]))))
+  (testing "bad syntax"
+    (is (thrown? Throwable (dpp/parse-pull '{:foo 119})))))
 
 (deftest map-specs-test
   (testing "wildcard"
