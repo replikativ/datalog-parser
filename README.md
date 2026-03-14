@@ -62,7 +62,7 @@ For more examples look at the [tests](test/datalog/parser_test.cljc).
 
 ## License
 
-Copyright © 2020 lambdaforge UG (haftungsbeschränkt), Nikita Prokopov
+Copyright © 2020-2026 Christian Weilbach et al.
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License 1.0.
