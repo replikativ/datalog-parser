@@ -22,3 +22,6 @@
                                             (impl/parse-return-maps))})]
     (impl/assert-valid res q qm)
     res))
+
+(defn parse-rules [rules]
+  (impl/parse-rules rules))
