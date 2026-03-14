@@ -158,7 +158,7 @@
             :in $1
             :where
             ($1 or [?e :name "Ivan"]
-                   [?e :name "Peter"])]]
+                [?e :name "Peter"])]]
     (is (= q (roundtrip q)))))
 
 (deftest rule-expr-clause
