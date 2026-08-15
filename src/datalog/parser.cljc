@@ -16,8 +16,11 @@
                            :qwith       (some-> qm :with impl/parse-with)
                            :qin         (impl/parse-in (:in qm ['$]))
                            :qwhere      (impl/parse-where (:where qm []))
+                           :qhaving     (-> qm :having impl/parse-having)
                            :qlimit      (-> qm :limit impl/parse-limit)
                            :qoffset     (-> qm :offset impl/parse-offset)
+                           :qorder      (-> qm :order-by impl/parse-order)
+                           :qtimeout    (-> qm :timeout impl/parse-timeout)
                            :qreturnmaps (-> qm (select-keys [:keys :syms :strs])
                                             (impl/parse-return-maps))})]
     (impl/assert-valid res q qm)

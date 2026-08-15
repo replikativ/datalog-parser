@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [Unreleased]
+### Added
+- `:order-by` support, as used by Datahike and Datalevin, parsed into `Order`
+  records in the `:qorder` field of the query
+- `:having` and `:timeout` support, as used by Datalevin, parsed into
+  `HavingPred` records in `:qhaving` and an integer in `:qtimeout`
+- all of the above roundtrip through the unparser
+
+### Fixed
+- `:limit` and `:offset` given in map queries, e.g. `{:find ... :limit 5}`
+
 ## [0.2.22]
 ### Changed
 - Release workflow switched to replikativ style
