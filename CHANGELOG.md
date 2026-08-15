@@ -11,6 +11,10 @@ All notable changes to this project will be documented in this file. This change
 
 ### Fixed
 - `:limit` and `:offset` given in map queries, e.g. `{:find ... :limit 5}`
+- return maps are rejected for single-scalar and collection `:find` specs, and
+  their key count is compared against the elements of the `:find` spec instead
+  of the shape of the written `:find` clause, which had made `:keys` on a
+  find-tuple off by one (#12)
 
 ## [0.2.22]
 ### Changed

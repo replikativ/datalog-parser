@@ -147,7 +147,7 @@
        :qwith nil}
 
     '{:find [[?e ?fname]]
-      :keys [foo]
+      :keys [foo bar]
       :in [$ ?fname ?lname]
       :where [[?e :user/firstName ?fname]
               [?e :user/lastName ?lname]]}
@@ -168,7 +168,9 @@
        :qtimeout nil,
        :qreturnmaps #datalog.parser.type.ReturnMaps
                      {:mapping-keys (#datalog.parser.type.MappingKey {:mapping-key
-                                                                      foo}),
+                                                                      foo}
+                                     #datalog.parser.type.MappingKey {:mapping-key
+                                                                      bar}),
                       :mapping-type :keys},
        :qwhere [#datalog.parser.type.Pattern
                  {:pattern [#datalog.parser.type.Variable {:symbol ?e}
@@ -331,6 +333,21 @@
     '{:find [?e] :where [[?e :age 30]] :limit 5 :offset 10 :timeout 1000}
     [5 10 1000]))
 
+(deftest return-maps
+  (are [q result] (= result (:qreturnmaps (parser/parse q)))
+    '[:find ?e ?f :keys foo bar :where [?e :a ?f]]
+    '#datalog.parser.type.ReturnMaps
+      {:mapping-type :keys
+       :mapping-keys (#datalog.parser.type.MappingKey {:mapping-key foo}
+                      #datalog.parser.type.MappingKey {:mapping-key bar})}
+
+    ;; the keys map onto the elements of a tuple, not onto the tuple itself
+    '[:find [?e ?f] :keys foo bar :where [?e :a ?f]]
+    '#datalog.parser.type.ReturnMaps
+      {:mapping-type :keys
+       :mapping-keys (#datalog.parser.type.MappingKey {:mapping-key foo}
+                      #datalog.parser.type.MappingKey {:mapping-key bar})}))
+
 (deftest validation-fails
   (are [q msg] (thrown-with-msg? ExceptionInfo msg (parser/parse q))
     '[:find ?e :where [?x]]
@@ -378,8 +395,23 @@
     '[:find ?e ?f :keys foo :where [?e ?f] :offset 666]
     #"Count of :keys/:strs/:syms must match count of :find"
 
-    '[:find [?e ?f] :keys foo bar :where [?e ?f] :offset 666]
+    '[:find [?e ?f] :keys foo :where [?e ?f] :offset 666]
     #"Count of :keys/:strs/:syms must match count of :find"
+
+    '[:find ?e . :keys foo :where [?e]]
+    #":keys does not work with single-scalar :find"
+
+    '[:find ?e . :keys foo bar :where [?e]]
+    #":keys does not work with single-scalar :find"
+
+    '[:find ?e . :strs foo :where [?e]]
+    #":strs does not work with single-scalar :find"
+
+    '[:find [?e ...] :keys foo :where [?e]]
+    #":keys does not work with collection :find"
+
+    '[:find [?e ...] :syms foo :where [?e]]
+    #":syms does not work with collection :find"
 
     '[:find ?e :strs '(foo bar) :keys '("foo" "bar") :where [?e] :offset 666]
     #"Only one of these three options is allowed: :keys :strs :syms"
