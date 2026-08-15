@@ -9,6 +9,11 @@ All notable changes to this project will be documented in this file. This change
   `HavingPred` records in `:qhaving` and an integer in `:qtimeout`
 - all of the above roundtrip through the unparser
 
+### Changed
+- `validate-or-join` checks the join variables once instead of looping over the
+  branches to run the same check on each of them, the private
+  `validate-or-join-vars` it called is gone (#32)
+
 ### Fixed
 - `:limit` and `:offset` given in map queries, e.g. `{:find ... :limit 5}`
 
