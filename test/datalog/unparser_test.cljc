@@ -197,6 +197,13 @@
             [?e :user/lastName ?lname]]]
     (is (= q (roundtrip q)))))
 
+(deftest return-maps-find-tuple
+  (let [q '[:find [?e ?name]
+            :in $
+            :keys foo bar
+            :where [?e :name ?name]]]
+    (is (= q (roundtrip q)))))
+
 (deftest return-maps-strs
   (let [q '[:find ?e
             :in $ ?fname

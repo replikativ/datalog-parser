@@ -1,7 +1,8 @@
 (ns datalog.parser.impl
   (:require [clojure.set               :as set]
             [datalog.parser.type       :as t #?@(:cljs [:refer [Not And Or Aggregate SrcVar RulesVar RuleExpr
-                                                                RuleVars Variable ReturnMaps MappingKey]])]
+                                                                RuleVars Variable ReturnMaps MappingKey
+                                                                FindColl FindScalar]])]
             [datalog.parser.impl.proto :as p]
             [datalog.parser.impl.util :as util
              #?(:cljs :refer-macros :clj :refer) [raise forv]])
@@ -9,7 +10,8 @@
   #?(:clj
      (:import [datalog.parser.type
                Not And Or Aggregate SrcVar RulesVar RuleExpr
-               RuleVars Variable ReturnMaps MappingKey])))
+               RuleVars Variable ReturnMaps MappingKey
+               FindColl FindScalar])))
 
 #?(:clj (set! *warn-on-reflection* true))
 
@@ -606,24 +608,34 @@
           (recur (update parsed key (fnil conj []) q) key qs))
         parsed))))
 
-(defn assert-valid [q form {:keys [find] :as _mform}]
+(defn assert-valid [q form _mform]
   (let [find-vars    (t/collect-vars #{} (:qfind  q))
         with-vars    (set                (:qwith  q))
         in-vars      (t/collect-vars #{} (:qin    q))
         where-vars   (t/collect-vars #{} (:qwhere q))
-        mapping-keys (t/collect-vars #{} (:qreturnmaps q))
+        return-maps  (:qreturnmaps q)
+        mapping-keys (t/collect-vars #{} return-maps)
         unknown      (set/difference (set/union find-vars with-vars)
                                      (set/union where-vars in-vars))
         shared       (set/intersection find-vars with-vars)
         mapped?      (or
                       (empty? mapping-keys)
-                      (= (count mapping-keys) (count find)))]
+                      (= (count mapping-keys)
+                         (count (p/find-elements (:qfind q)))))]
     (when-not (empty? unknown)
       (raise "Query for unknown vars: " (mapv :symbol unknown)
              {:error :parser/query, :vars unknown, :form form}))
     (when-not (empty? shared)
       (raise ":find and :with should not use same variables: " (mapv :symbol shared)
              {:error :parser/query, :vars shared, :form form}))
+    ;; a scalar and a collection hold a single value per result, there is
+    ;; nothing to map the keys onto
+    (when (and return-maps (instance? FindScalar (:qfind q)))
+      (raise (:mapping-type return-maps) " does not work with single-scalar :find"
+             {:error :parser/query, :form form}))
+    (when (and return-maps (instance? FindColl (:qfind q)))
+      (raise (:mapping-type return-maps) " does not work with collection :find"
+             {:error :parser/query, :form form}))
     (when-not mapped?
       (raise "Count of :keys/:strs/:syms must match count of :find"
              {:error :parser/query, :keys mapping-keys, :values in-vars, :form form})))
