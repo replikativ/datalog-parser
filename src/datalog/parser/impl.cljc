@@ -329,11 +329,6 @@
     (raise "Join variables should not be empty"
            {:error :parser/where :form form})))
 
-(defn- validate-or-join-vars [vars clauses form]
-  (when (empty? vars)
-    (raise "Join variables should not be empty"
-           {:error :parser/where :form form})))
-
 (defn- validate-not [clause form]
   (validate-join-vars (:vars clause) (:clauses clause) form)
   clause)
@@ -371,11 +366,14 @@
     clause))
 
 (defn validate-or-join [clause form]
+  ;; a join variable of an 'or-join' does not have to appear in every branch,
+  ;; unlike the variables of an 'or', so all there is to check is that the
+  ;; clause declares any at all
   (let [{{required :required
-          free     :free} :rule-vars} clause
-        vars                          (concat required free)]
-    (doseq [clause (:clauses clause)]
-      (validate-or-join-vars vars [clause] form))
+          free     :free} :rule-vars} clause]
+    (when (and (empty? required) (empty? free))
+      (raise "Join variables should not be empty"
+             {:error :parser/where :form form}))
     clause))
 
 (defn parse-and [form]
