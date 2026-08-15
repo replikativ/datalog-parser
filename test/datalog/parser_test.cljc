@@ -1,6 +1,6 @@
 (ns datalog.parser-test
-  (:require #?(:cljs [cljs.test :refer-macros [are deftest is]]
-               :clj  [clojure.test :refer [are deftest is]])
+  (:require #?(:cljs [cljs.test :refer-macros [are deftest is testing]]
+               :clj  [clojure.test :refer [are deftest is testing]])
             [datalog.parser :as parser])
   #?(:clj (:import [clojure.lang ExceptionInfo])))
 
@@ -347,6 +347,28 @@
       {:mapping-type :keys
        :mapping-keys (#datalog.parser.type.MappingKey {:mapping-key foo}
                       #datalog.parser.type.MappingKey {:mapping-key bar})}))
+
+(deftest implicit-rules
+  (testing "an engine may pre-install rules, so '%' is not always needed"
+    (is (thrown-with-msg? ExceptionInfo #"Missing rules var '%' in :in"
+                          (parser/parse '[:find ?e :where (rule ?e)])))
+
+    (is (parser/parse '[:find ?e :where (rule ?e)] {:implicit-rules? true}))
+
+    (testing "named rules are implicit, others still need '%'"
+      (is (parser/parse '[:find ?s :in $ ?at
+                          :where (valid-at ?tx ?at) [?e :salary ?s ?tx true]]
+                        {:implicit-rules? '#{valid-at}}))
+      (is (thrown-with-msg? ExceptionInfo #"Missing rules var '%' in :in"
+                            (parser/parse '[:find ?e :where (typo-rule ?e)]
+                                          {:implicit-rules? '#{valid-at}}))))
+
+    (testing "the raise names the rules that are missing a binding"
+      (is (= '[other]
+             (:rules (try (parser/parse '[:find ?s :in $ ?at
+                                          :where (valid-at ?tx ?at) (other ?tx ?s)]
+                                        {:implicit-rules? '#{valid-at}})
+                          (catch ExceptionInfo e (ex-data e)))))))))
 
 (deftest validation-fails
   (are [q msg] (thrown-with-msg? ExceptionInfo msg (parser/parse q))

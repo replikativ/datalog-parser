@@ -13,6 +13,10 @@ All notable changes to this project will be documented in this file. This change
   binds. Depends on nothing but the parser itself
 
 ### Changed
+- `parse` takes an options map. `:implicit-rules?` allows a rule expression
+  without a `%` binding in `:in`, for engines that pre-install rules the way
+  Datahike does with its bitemporal ones. Either `true` or the collection of
+  rule names that are pre-installed
 - `validate-or-join` checks the join variables once instead of looping over the
   branches to run the same check on each of them, the private
   `validate-or-join-vars` it called is gone (#32)

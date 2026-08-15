@@ -80,6 +80,18 @@ query modification:
 ;;    [(ancestor ?e1 ?e2) [?e1 :parent ?t] (ancestor ?t ?e2)]]
 ```
 
+### Options
+
+Some engines pre-install rules, e.g. Datahike its bitemporal `valid-at` and
+friends, so a query calling them never binds `%` itself. `:implicit-rules?`
+accepts such a query, either for any rule or for the names given:
+
+```clojure
+(parser/parse '[:find ?s :in $ ?at
+                :where (valid-at ?tx ?at) [?e :salary ?s ?tx true]]
+              {:implicit-rules? '#{valid-at}})
+```
+
 ### Analysis
 
 `datalog.analysis` answers questions about a parsed query that hold whatever

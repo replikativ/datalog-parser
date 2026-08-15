@@ -606,82 +606,99 @@
           (recur (update parsed key (fnil conj []) q) key qs))
         parsed))))
 
-(defn assert-valid [q form _mform]
-  (let [find-vars    (t/collect-vars #{} (:qfind  q))
-        with-vars    (set                (:qwith  q))
-        in-vars      (t/collect-vars #{} (:qin    q))
-        where-vars   (t/collect-vars #{} (:qwhere q))
-        return-maps  (:qreturnmaps q)
-        mapping-keys (t/collect-vars #{} return-maps)
-        unknown      (set/difference (set/union find-vars with-vars)
-                                     (set/union where-vars in-vars))
-        shared       (set/intersection find-vars with-vars)
-        mapped?      (or
-                      (empty? mapping-keys)
-                      (= (count mapping-keys)
-                         (count (p/find-elements (:qfind q)))))]
-    (when-not (empty? unknown)
-      (raise "Query for unknown vars: " (mapv :symbol unknown)
-             {:error :parser/query, :vars unknown, :form form}))
-    (when-not (empty? shared)
-      (raise ":find and :with should not use same variables: " (mapv :symbol shared)
-             {:error :parser/query, :vars shared, :form form}))
+(defn- missing-rules
+  "The rule expressions that need a '%' binding in :in. An engine may
+  pre-install rules, Datahike does so with its bitemporal ones, and a query
+  calling those never binds '%' itself. `implicit` is either true, for any
+  rule, or the collection of rule names that are pre-installed."
+  [rule-exprs implicit]
+  (cond
+    (true? implicit) []
+    (not implicit)   rule-exprs
+    :else            (let [implicit (set implicit)]
+                       (remove #(contains? implicit (:symbol (:name %)))
+                               rule-exprs))))
+
+(defn assert-valid
+  ([q form mform] (assert-valid q form mform nil))
+  ([q form _mform {:keys [implicit-rules?] :as _opts}]
+   (let [find-vars    (t/collect-vars #{} (:qfind  q))
+         with-vars    (set                (:qwith  q))
+         in-vars      (t/collect-vars #{} (:qin    q))
+         where-vars   (t/collect-vars #{} (:qwhere q))
+         return-maps  (:qreturnmaps q)
+         mapping-keys (t/collect-vars #{} return-maps)
+         unknown      (set/difference (set/union find-vars with-vars)
+                                      (set/union where-vars in-vars))
+         shared       (set/intersection find-vars with-vars)
+         mapped?      (or
+                       (empty? mapping-keys)
+                       (= (count mapping-keys)
+                          (count (p/find-elements (:qfind q)))))]
+     (when-not (empty? unknown)
+       (raise "Query for unknown vars: " (mapv :symbol unknown)
+              {:error :parser/query, :vars unknown, :form form}))
+     (when-not (empty? shared)
+       (raise ":find and :with should not use same variables: " (mapv :symbol shared)
+              {:error :parser/query, :vars shared, :form form}))
     ;; a scalar and a collection hold a single value per result, there is
     ;; nothing to map the keys onto
-    (when (and return-maps (instance? FindScalar (:qfind q)))
-      (raise (:mapping-type return-maps) " does not work with single-scalar :find"
-             {:error :parser/query, :form form}))
-    (when (and return-maps (instance? FindColl (:qfind q)))
-      (raise (:mapping-type return-maps) " does not work with collection :find"
-             {:error :parser/query, :form form}))
-    (when-not mapped?
-      (raise "Count of :keys/:strs/:syms must match count of :find"
-             {:error :parser/query, :keys mapping-keys, :values in-vars, :form form})))
+     (when (and return-maps (instance? FindScalar (:qfind q)))
+       (raise (:mapping-type return-maps) " does not work with single-scalar :find"
+              {:error :parser/query, :form form}))
+     (when (and return-maps (instance? FindColl (:qfind q)))
+       (raise (:mapping-type return-maps) " does not work with collection :find"
+              {:error :parser/query, :form form}))
+     (when-not mapped?
+       (raise "Count of :keys/:strs/:syms must match count of :find"
+              {:error :parser/query, :keys mapping-keys, :values in-vars, :form form})))
 
-  (let [in-vars    (t/collect-vars        (:qin q))
-        in-sources (collect-type SrcVar   (:qin q))
-        in-rules   (collect-type RulesVar (:qin q))]
-    (when-not (and (distinct? in-vars)
-                   (distinct? in-sources)
-                   (distinct? in-rules))
-      (raise "Vars used in :in should be distinct"
-             {:error :parser/query, :form form})))
+   (let [in-vars    (t/collect-vars        (:qin q))
+         in-sources (collect-type SrcVar   (:qin q))
+         in-rules   (collect-type RulesVar (:qin q))]
+     (when-not (and (distinct? in-vars)
+                    (distinct? in-sources)
+                    (distinct? in-rules))
+       (raise "Vars used in :in should be distinct"
+              {:error :parser/query, :form form})))
 
-  (let [with-vars (t/collect-vars (:qwith q))]
-    (when-not (distinct? with-vars)
-      (raise "Vars used in :with should be distinct"
-             {:error :parser/query, :form form})))
+   (let [with-vars (t/collect-vars (:qwith q))]
+     (when-not (distinct? with-vars)
+       (raise "Vars used in :with should be distinct"
+              {:error :parser/query, :form form})))
 
-  (let [in-sources    (collect-type SrcVar (:qin    q) #{})
-        where-sources (collect-type SrcVar (:qwhere q) #{})
-        unknown       (set/difference where-sources in-sources)]
-    (when-not (empty? unknown)
-      (raise "Where uses unknown source vars: " (mapv :symbol unknown)
-             {:error :parser/query, :vars unknown, :form form})))
+   (let [in-sources    (collect-type SrcVar (:qin    q) #{})
+         where-sources (collect-type SrcVar (:qwhere q) #{})
+         unknown       (set/difference where-sources in-sources)]
+     (when-not (empty? unknown)
+       (raise "Where uses unknown source vars: " (mapv :symbol unknown)
+              {:error :parser/query, :vars unknown, :form form})))
 
-  (let [rule-exprs (collect-type RuleExpr (:qwhere q))
-        rules-vars (collect-type RulesVar (:qin    q))]
-    (when (and (seq rule-exprs)
-               (empty? rules-vars))
-      (raise "Missing rules var '%' in :in"
-             {:error :parser/query, :form form})))
+   (let [rule-exprs (collect-type RuleExpr (:qwhere q))
+         rules-vars (collect-type RulesVar (:qin    q))
+         missing    (missing-rules rule-exprs implicit-rules?)]
+     (when (and (seq missing)
+                (empty? rules-vars))
+       (raise "Missing rules var '%' in :in"
+              {:error :parser/query, :form form
+               :rules (mapv #(:symbol (:name %)) missing)})))
 
-  (when-let [order (seq (:qorder q))]
-    (let [elements  (map :element order)
-          find-vars (t/collect-vars #{} (:qfind q))
-          columns   (count (p/find-elements (:qfind q)))
-          unknown   (remove #(or (not (instance? Variable %))
-                                 (contains? find-vars %))
-                            elements)
-          oob       (remove #(or (instance? Variable %)
-                                 (< (:value %) columns))
-                            elements)]
-      (when-not (distinct? elements)
-        (raise "Vars used in :order-by should be distinct"
-               {:error :parser/query, :form form}))
-      (when-not (empty? unknown)
-        (raise ":order-by uses vars that are not in :find: " (mapv :symbol unknown)
-               {:error :parser/query, :vars unknown, :form form}))
-      (when-not (empty? oob)
-        (raise ":order-by column index out of bounds: " (mapv :value oob)
-               {:error :parser/query, :form form})))))
+   (when-let [order (seq (:qorder q))]
+     (let [elements  (map :element order)
+           find-vars (t/collect-vars #{} (:qfind q))
+           columns   (count (p/find-elements (:qfind q)))
+           unknown   (remove #(or (not (instance? Variable %))
+                                  (contains? find-vars %))
+                             elements)
+           oob       (remove #(or (instance? Variable %)
+                                  (< (:value %) columns))
+                             elements)]
+       (when-not (distinct? elements)
+         (raise "Vars used in :order-by should be distinct"
+                {:error :parser/query, :form form}))
+       (when-not (empty? unknown)
+         (raise ":order-by uses vars that are not in :find: " (mapv :symbol unknown)
+                {:error :parser/query, :vars unknown, :form form}))
+       (when-not (empty? oob)
+         (raise ":order-by column index out of bounds: " (mapv :value oob)
+                {:error :parser/query, :form form}))))))
