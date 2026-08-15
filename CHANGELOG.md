@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file. This change
 - `:having` and `:timeout` support, as used by Datalevin, parsed into
   `HavingPred` records in `:qhaving` and an integer in `:qtimeout`
 - all of the above roundtrip through the unparser
+- `datalog.analysis`, an opt-in namespace that reports the clauses of a query
+  that no ordering can ever run, e.g. a predicate over a variable that nothing
+  binds. Depends on nothing but the parser itself
 
 ### Changed
 - `validate-or-join` checks the join variables once instead of looping over the

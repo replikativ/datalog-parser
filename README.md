@@ -80,6 +80,33 @@ query modification:
 ;;    [(ancestor ?e1 ?e2) [?e1 :parent ?t] (ancestor ?t ?e2)]]
 ```
 
+### Analysis
+
+`datalog.analysis` answers questions about a parsed query that hold whatever
+engine runs it. A clause like `[(> ?a 18)]` cannot run before something binds
+`?a`, but the order the clauses are written in does not matter, since an engine
+may reorder them. Whether *any* order can work is decidable from the parsed
+query alone:
+
+```clojure
+(require '[datalog.analysis :as analysis])
+
+;; written backwards, but an engine can run the pattern first
+(analysis/unsatisfiable-clauses
+  (parser/parse '[:find ?e :in $ :where [(> ?a 18)] [?e :age ?a]]))
+;;=> []
+
+;; nothing binds ?b, in any order
+(analysis/unsatisfiable-clauses
+  (parser/parse '[:find ?e :in $ :where [?e :age ?a] [(> ?b 18)]]))
+;;=> [{:clause #Predicate{...}, :form [(> ?b 18)], :missing #{?b}}]
+```
+
+`assert-satisfiable` raises on the same condition and returns the query
+otherwise, and `bindable-vars` gives the set of variables some ordering can
+bind. The analysis is opt-in, `parse` does not run it, and it errs towards
+saying nothing: a query is only reported when no ordering can work.
+
 For more examples look at the [tests](test/datalog/parser_test.cljc).
 
 ## License
