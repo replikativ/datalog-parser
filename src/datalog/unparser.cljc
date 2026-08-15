@@ -4,7 +4,7 @@
                [datalog.parser.type :refer
                 [Aggregate And BindColl BindIgnore BindScalar BindTuple Constant
                  DefaultSrc FindColl FindRel FindScalar FindTuple Function
-                 MappingKey Not Or
+                 HavingPred MappingKey Not Or Order
                  Pattern Placeholder PlainSymbol Predicate Pull Query
                  ReturnMaps Rule RuleBranch RuleExpr RulesVar RuleVars
                  SrcVar Variable]]))
@@ -12,7 +12,7 @@
      (:import [datalog.parser.type
                Aggregate And BindColl BindIgnore BindScalar BindTuple Constant
                DefaultSrc FindColl FindRel FindScalar FindTuple Function
-               MappingKey Not Or
+               HavingPred MappingKey Not Or Order
                Pattern Placeholder PlainSymbol Predicate Pull Query
                ReturnMaps Rule RuleBranch RuleExpr RulesVar RuleVars
                SrcVar Variable])))
@@ -87,6 +87,10 @@
     [(apply list (-unparse fn) (map -unparse args))
      (-unparse binding)])
 
+  HavingPred
+  (-unparse [{:keys [fn args]}]
+    [(apply list (-unparse fn) (map -unparse args))])
+
   MappingKey
   (-unparse [mk] (:mapping-key mk))
 
@@ -117,6 +121,10 @@
                 ['or])
               (map -unparse clauses)))))
 
+  Order
+  (-unparse [{:keys [element direction]}]
+    [(-unparse element) direction])
+
   Pattern
   (-unparse [{:keys [source pattern]}]
     (vec (concat (when-let [s (-unparse source)] [s])
@@ -141,8 +149,11 @@
 
   Query
   (-unparse [{:keys [qfind qwith qin qwhere] :as q}]
-    (let [qlimit (:qlimit q)
+    (let [qhaving (:qhaving q)
+          qlimit (:qlimit q)
           qoffset (:qoffset q)
+          qorder (:qorder q)
+          qtimeout (:qtimeout q)
           qreturnmaps (:qreturnmaps q)]
       (vec
        (concat
@@ -154,8 +165,13 @@
           (-unparse qreturnmaps))
         [:where]
         (map -unparse qwhere)
+        (when (seq qhaving)
+          (into [:having] (map -unparse qhaving)))
+        (when (seq qorder)
+          [:order-by (vec (mapcat -unparse qorder))])
         (when qlimit [:limit qlimit])
-        (when qoffset [:offset qoffset])))))
+        (when qoffset [:offset qoffset])
+        (when qtimeout [:timeout qtimeout])))))
 
   ReturnMaps
   (-unparse [{:keys [mapping-type mapping-keys]}]

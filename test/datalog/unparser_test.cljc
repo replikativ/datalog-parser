@@ -257,6 +257,48 @@
             :where [?e :age 30]]]
     (is (= q (roundtrip q)))))
 
+(deftest order-by-clause
+  (let [q '[:find ?e ?age
+            :in $
+            :where [?e :age ?age]
+            :order-by [?age :desc ?e :asc]]]
+    (is (= q (roundtrip q)))))
+
+(deftest order-by-column-index
+  (let [q '[:find ?e ?age
+            :in $
+            :where [?e :age ?age]
+            :order-by [1 :desc]
+            :limit 10]]
+    (is (= q (roundtrip q)))))
+
+(deftest order-by-single-var
+  (testing "a bare variable normalizes to an explicit ascending spec"
+    (let [q-in  '[:find ?e ?age
+                  :in $
+                  :where [?e :age ?age]
+                  :order-by ?age]
+          q-out '[:find ?e ?age
+                  :in $
+                  :where [?e :age ?age]
+                  :order-by [?age :asc]]]
+      (is (= q-out (roundtrip q-in))))))
+
+(deftest having-clause
+  (let [q '[:find ?e (count ?x)
+            :in $
+            :where [?e :friend ?x]
+            :having [(> (count ?x) 3)]]]
+    (is (= q (roundtrip q)))))
+
+(deftest having-multiple-preds
+  (let [q '[:find ?e (count ?x)
+            :in $
+            :where [?e :friend ?x]
+            :having [(> (count ?x) 3)] [(< (count ?x) 10)]
+            :timeout 1000]]
+    (is (= q (roundtrip q)))))
+
 ;; === Rules roundtrips ===
 
 (deftest simple-rules-roundtrip

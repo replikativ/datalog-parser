@@ -36,6 +36,28 @@ org.replikativ/datalog-parser {:mvn/version "0.2.XX"}
 ;;                                    #Variable{:symbol ?y}]}]}
 ```
 
+Besides the Datomic dialect the parser understands the clauses that
+[Datahike](https://github.com/replikativ/datahike) and
+[Datalevin](https://github.com/juji-io/datalevin) add on top of it: `:limit`,
+`:offset` and `:order-by` for pagination and ordering, `:having` for predicates
+over aggregates and `:timeout`. They are parsed in both the vector and the map
+syntax:
+
+```clojure
+(parser/parse '[:find ?e ?age
+                :where [?e :age ?age]
+                :order-by [?age :desc]
+                :limit 10])
+
+;;=> #Query{... :qorder  [#Order{:element #Variable{:symbol ?age}, :direction :desc}]
+;;              :qlimit  10}
+```
+
+An `:order-by` element is either a variable of the `:find` spec or an index into
+it, optionally followed by `:asc` or `:desc`, which defaults to `:asc`. A
+`:having` predicate reads like a `:where` predicate, but over the aggregates of
+the `:find` spec, e.g. `:having [(> (count ?x) 3)]`.
+
 ### Unparsing
 
 Convert parsed query records back into the query DSL. This enables programmatic

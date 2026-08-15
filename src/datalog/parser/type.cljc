@@ -138,6 +138,20 @@
 
 (def return-maps? (partial instance? ReturnMaps))
 
+;; predicates over aggregates, evaluated after grouping, as supported by Datalevin
+;; having      = [ having-pred+ ]
+;; having-pred = [ (pred (aggregate | variable | constant)+) ]
+
+(deftrecord HavingPred [fn args])
+
+;; ordering of the result relation, as supported by Datahike and Datalevin
+;; order-by-spec  = ':order-by' (order-elem | [ order-elem+ ])
+;; order-elem     = (variable | index) direction?
+;; index          = non-negative integer, position in the :find spec
+;; direction      = (':asc' | ':desc'), ':asc' when omitted
+
+(deftrecord Order [element direction])
+
 ;; q* prefix because of https"//dev.clojure.org/jira/browse/CLJS-2237"
 (deftrecord Query [qfind qwith qin qwhere])
 

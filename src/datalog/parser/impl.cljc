@@ -429,19 +429,101 @@
   "Parse pagination limit"
   [limit]
   (when limit
-    (if (integer? (first limit))
-      (first limit)
-      (raise "Cannot parse :limit, expected integer"
-             {:error :parser/limit, :limit limit}))))
+    (let [l (if (sequential? limit) (first limit) limit)]
+      (if (integer? l)
+        l
+        (raise "Cannot parse :limit, expected integer"
+               {:error :parser/limit, :limit limit})))))
 
 (defn parse-offset
   "Parse pagination offset"
   [offset]
   (when offset
-    (if (integer? (first offset))
-      (first offset)
-      (raise "Cannot parse :offset, expected integer"
-             {:error :parser/offset, :offset offset}))))
+    (let [o (if (sequential? offset) (first offset) offset)]
+      (if (integer? o)
+        o
+        (raise "Cannot parse :offset, expected integer"
+               {:error :parser/offset, :offset offset})))))
+
+(defn parse-timeout
+  "Parse query timeout in milliseconds"
+  [timeout]
+  (when timeout
+    (let [t (if (sequential? timeout) (first timeout) timeout)]
+      (if (integer? t)
+        t
+        (raise "Cannot parse :timeout, expected integer"
+               {:error :parser/timeout, :timeout timeout})))))
+
+;; having      = [ having-pred+ ]
+;; having-pred = [ (pred (aggregate | variable | constant)+) ]
+
+(defn- parse-having-arg [form]
+  (or (parse-aggregate form)
+      (parse-variable  form)
+      (parse-constant  form)))
+
+(defn- parse-having-pred [form]
+  (when (and (of-size? form 1)
+             (sequential? (first form)))
+    (let [[f & args] (first form)
+          fn*   (or (parse-plain-symbol f) (parse-variable f))
+          args* (parse-seq parse-having-arg args)]
+      (when (and fn* args*)
+        (with-source (datalog.parser.type.HavingPred. fn* args*) form)))))
+
+(defn parse-having
+  "Parse the :having clause of Datalevin, predicates over aggregates that are
+  applied after grouping."
+  [having]
+  (when (some? having)
+    (let [;; a lone predicate, e.g. `{:having [(> (sum ?x) 3)]}`, is its own spec
+          preds (if (and (of-size? having 1) (seq? (first having)))
+                  [having]
+                  having)]
+      (or (not-empty (parse-seq parse-having-pred preds))
+          (raise "Cannot parse :having, expected [ [(pred aggregate+)]+ ]"
+                 {:error :parser/having, :having having})))))
+
+;; order-by-spec = ':order-by' (order-elem | [ order-elem+ ])
+;; order-elem    = (variable | index) direction?
+;; direction     = (':asc' | ':desc')
+
+(defn- parse-order-element [form]
+  (or (parse-variable form)
+      (when (and (integer? form) (not (neg? form)))
+        (datalog.parser.type.Constant. form))))
+
+(defn- order-spec
+  "Normalize the many shapes an :order-by can arrive in into a flat sequence.
+  A vector query puts everything following :order-by into a vector, so both
+  `[?a :desc]` and `[[?a :desc]]` have to be understood here."
+  [form]
+  (cond
+    (or (symbol? form) (integer? form)) [form]
+    (and (of-size? form 1)
+         (sequential? (first form)))    (first form)
+    (sequential? form)                  form
+    :else (raise "Cannot parse :order-by, expected [ (variable | index) (:asc | :desc)? ]+"
+                 {:error :parser/order-by, :order-by form})))
+
+(defn parse-order
+  "Parse the :order-by clause of Datahike and Datalevin. Each element is a
+  variable of the :find spec or an index into it, optionally followed by a
+  direction, defaulting to :asc."
+  [order-by]
+  (when (some? order-by)
+    (loop [acc [], forms (seq (order-spec order-by))]
+      (if-let [[form & forms] forms]
+        (if-let [element (parse-order-element form)]
+          (if (#{:asc :desc} (first forms))
+            (recur (conj acc (datalog.parser.type.Order. element (first forms)))
+                   (next forms))
+            (recur (conj acc (datalog.parser.type.Order. element :asc))
+                   forms))
+          (raise "Cannot parse :order-by, expected [ (variable | index) (:asc | :desc)? ]+"
+                 {:error :parser/order-by, :order-by order-by, :form form}))
+        (not-empty acc)))))
 
 (defn parse-return-maps
   "Parse request to return maps"
@@ -513,7 +595,8 @@
             (datalog.parser.type.Rule. name branches)))))
 
 (defn query->map [query]
-  (let [allowed-keys #{:find :with :in :where :limit :offset :keys :syms :strs}]
+  (let [allowed-keys #{:find :with :in :where :limit :offset :order-by
+                       :having :timeout :keys :syms :strs}]
     (loop [parsed {}
            key    nil
            qs     query]
@@ -571,4 +654,24 @@
     (when (and (seq rule-exprs)
                (empty? rules-vars))
       (raise "Missing rules var '%' in :in"
-             {:error :parser/query, :form form}))))
+             {:error :parser/query, :form form})))
+
+  (when-let [order (seq (:qorder q))]
+    (let [elements  (map :element order)
+          find-vars (t/collect-vars #{} (:qfind q))
+          columns   (count (p/find-elements (:qfind q)))
+          unknown   (remove #(or (not (instance? Variable %))
+                                 (contains? find-vars %))
+                            elements)
+          oob       (remove #(or (instance? Variable %)
+                                 (< (:value %) columns))
+                            elements)]
+      (when-not (distinct? elements)
+        (raise "Vars used in :order-by should be distinct"
+               {:error :parser/query, :form form}))
+      (when-not (empty? unknown)
+        (raise ":order-by uses vars that are not in :find: " (mapv :symbol unknown)
+               {:error :parser/query, :vars unknown, :form form}))
+      (when-not (empty? oob)
+        (raise ":order-by column index out of bounds: " (mapv :value oob)
+               {:error :parser/query, :form form})))))
