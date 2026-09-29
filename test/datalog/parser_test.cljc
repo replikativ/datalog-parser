@@ -460,7 +460,6 @@
     '[:find ?e :where [?e :age 30] :timeout "soon"]
     #"Cannot parse :timeout, expected integer"))
 
-
 (deftest aggregate-argument-must-be-a-variable
   ;; An aggregate aggregates a VARIABLE. `-find-vars` reads the last
   ;; argument, so a constant there — which is what an expression over
