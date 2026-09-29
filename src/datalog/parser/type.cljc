@@ -2,8 +2,9 @@
   (:require [datalog.parser.impl.proto :as p]
             [datalog.parser.util       :as util]
             [datalog.parser.impl.util
-             :refer [collect]])
-  #?(:cljs (:require-macros [datalog.parser.type :refer [deftrecord]])))
+             :refer [collect raise]])
+  #?(:cljs (:require-macros [datalog.parser.type :refer [deftrecord]]
+                            [datalog.parser.impl.util :refer [raise]])))
 
 #?(:clj (set! *warn-on-reflection* true))
 
@@ -85,7 +86,26 @@
   Aggregate
   (p/-find-vars [this] (p/-find-vars (last (.-args this))))
   Pull
-  (p/-find-vars [this] (p/-find-vars (.-variable this))))
+  (p/-find-vars [this] (p/-find-vars (.-variable this)))
+  Constant
+  ;; An aggregate aggregates a VARIABLE. `-find-vars` reads its last
+  ;; argument, so a constant there -- which is what an arithmetic
+  ;; expression over aggregates parses into, `(/ (count ?e) 2)` --
+  ;; reached a protocol with no implementation and answered with the
+  ;; JVM's own `No implementation of method: :-find-vars`.
+  ;;
+  ;; Returning `[]` here is the obvious fix and it is WRONG: the query
+  ;; then runs and yields an empty tuple, so `(* 100.0 (count ?e))`
+  ;; answers `[[]]` instead of 200.0. A loud internal error would
+  ;; become a silent wrong one. Until an expression over aggregates is
+  ;; actually evaluated, say so.
+  (p/-find-vars [this]
+    (raise "Aggregate argument must be a variable, got the constant "
+           (pr-str (.-value this))
+           ". An expression over aggregates -- (* 100.0 (count ?e)), "
+           "(/ (sum ?c) (count ?x)) -- is not supported in :find; "
+           "aggregate in :find and compute over the result."
+           {:error :parser/find, :value (.-value this)})))
 
 (extend-protocol p/IFindElements
   FindRel

@@ -1,7 +1,8 @@
 (ns datalog.parser-test
   (:require #?(:cljs [cljs.test :refer-macros [are deftest is testing]]
                :clj  [clojure.test :refer [are deftest is testing]])
-            [datalog.parser :as parser])
+            [datalog.parser :as parser]
+            [datalog.parser.impl :as impl])
   #?(:clj (:import [clojure.lang ExceptionInfo])))
 
 (deftest validation
@@ -459,3 +460,26 @@
     '[:find ?e :where [?e :age 30] :timeout "soon"]
     #"Cannot parse :timeout, expected integer"))
 
+
+(deftest aggregate-argument-must-be-a-variable
+  ;; An aggregate aggregates a VARIABLE. `-find-vars` reads the last
+  ;; argument, so a constant there — which is what an expression over
+  ;; aggregates parses into — reached a protocol with no implementation
+  ;; and leaked `No implementation of method: :-find-vars`.
+  ;;
+  ;; Returning `[]` for a Constant is the obvious fix and it is WRONG:
+  ;; the query then runs and yields an empty tuple, so
+  ;; `(* 100.0 (count ?e))` answers `[[]]` where it should answer 200.0
+  ;; or refuse. A loud internal error would have become a silent wrong
+  ;; one, which is strictly worse. This pins the refusal.
+  (are [q] (thrown-with-msg?
+            ExceptionInfo #"Aggregate argument must be a variable"
+            (impl/find-vars (:qfind (parser/parse q))))
+    '[:find (* 100.0 (count ?e)) :where [?e :x ?v]]
+    '[:find (/ (count ?e) 2) :where [?e :x ?v]]
+    '[:find (/ (sum ?c) (count ?x)) :where [?x :c ?c]])
+  (testing "an ordinary aggregate, and one taking a constant FIRST, still parse"
+    (are [q vars] (= vars (vec (impl/find-vars (:qfind (parser/parse q)))))
+      '[:find (count ?e) :where [?e :x ?v]]       '[?e]
+      '[:find (sample 5 ?e) :where [?e :x ?v]]    '[?e]
+      '[:find ?v (count ?e) :where [?e :x ?v]]    '[?v ?e])))
